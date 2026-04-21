@@ -1,6 +1,9 @@
 import pandas as pd
 from pathlib import Path
 
+# I suggest making a class, considering we sometimes we want to
+# make multiple log_rows in the same note-book
+
 log_rows = []
 
 def log_step(step: str, rows_before: int, rows_after: int, cols_before: int, cols_after: int, note: str = '') -> None:

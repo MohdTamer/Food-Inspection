@@ -12,7 +12,7 @@ The GX 1.x API changed significantly from older versions
 import pandas as pd
 import numpy as np
 import great_expectations as gx
-from science_the_data.config import RAW_DATA_DIR
+from science_the_data.config import INTERIM_DATA_DIR, RAW_DATA_DIR
 
 
 # ─────────────────────────────────────────────
@@ -302,7 +302,7 @@ def _print_gx_report(results):
 # ─────────────────────────────────────────────
 
 if __name__ == "__main__":
-    df = pd.read_csv(RAW_DATA_DIR / 'food-inspections.csv', parse_dates=['Inspection Date'])
+    df = pd.read_csv(INTERIM_DATA_DIR / 'merged_inspections_licenses_inner.csv', parse_dates=['Inspection Date'])
 
     print_basic_stats(df)       # Row/col counts, dtypes, missing, duplicates
     print_quality_issues(df)    # Domain-specific quality checks

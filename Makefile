@@ -6,25 +6,41 @@ PROJECT_NAME = Food-Inspection
 PYTHON_VERSION = 3.13
 PYTHON_INTERPRETER = python
 
+
+#################################################################################
+# PATHS                                                                         #
+#################################################################################
+PIPELINES_DIR = science_the_data/
+
 #################################################################################
 # COMMANDS                                                                      #
 #################################################################################
 
+## run the main script
+.PHONY: run
+run:
+	poetry run $(PYTHON_INTERPRETER) $(PIPELINES_DIR)main.py
+
+## Validate interim data and write report to reports/
+.PHONY: validate
+validate:
+	poetry run $(PYTHON_INTERPRETER) science_the_data/validate.py
+
+## Validate without running Great Expectations (much faster)
+.PHONY: validate-fast  
+validate-fast:
+	poetry run $(PYTHON_INTERPRETER) science_the_data/validate.py --skip-gx
 
 ## Install Python dependencies
 .PHONY: requirements
 requirements:
 	poetry install
 	
-
-
-
 ## Delete all compiled Python files
 .PHONY: clean
 clean:
 	find . -type f -name "*.py[co]" -delete
 	find . -type d -name "__pycache__" -delete
-
 
 ## Lint using ruff (use `make format` to do formatting)
 .PHONY: lint
@@ -44,7 +60,6 @@ format:
 .PHONY: test
 test:
 	python -m pytest tests
-
 
 ## Set up Python interpreter environment
 .PHONY: create_environment

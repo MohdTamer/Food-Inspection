@@ -1,49 +1,30 @@
-"""
-validate.py
------------
-Validation pipeline entry point — mirrors the style of dataset.py and features.py.
-
-Usage (from project root via Makefile):
-    poetry run python science_the_data/validate.py
-
-Usage (with custom paths):
-    poetry run python science_the_data/validate.py \
-        --input-path data/interim/merged_inspections_licenses_inner.csv \
-        --output-dir reports/
-"""
-
 from pathlib import Path
 
 import pandas as pd
 import typer
 from loguru import logger
 
-from science_the_data.config.config import INTERIM_DATA_DIR
-from science_the_data.helpers.path_resolver import PathResolver
-from science_the_data.validations.stats        import compute_basic_stats
-from science_the_data.validations.quality      import run_quality_checks
-from science_the_data.validations.expectations import run_gx_validation
-from science_the_data.validations.report       import write_report
+from science_the_data.helpers.path_resolver     import PathResolver
+from science_the_data.validations.stats         import compute_basic_stats
+from science_the_data.validations.quality       import run_quality_checks
+from science_the_data.validations.expectations  import run_gx_validation
+from science_the_data.validations.report        import write_report
 
 app = typer.Typer()
 
 REPORTS_DIR = Path("reports")
 
-
 @app.command()
-def main(
+def run_validations(
     input_path: Path = PathResolver.raw("merged_inspections_licenses_inner.csv"),
     output_dir: Path = REPORTS_DIR,
     skip_gx:    bool = typer.Option(False, "--skip-gx", help="Skip Great Expectations (faster)"),
 ):
-    """Run all validation checks and write a Markdown report to output_dir."""
-
-    # ── Load ──────────────────────────────────────────────────────────────────
+    logger.info("running validations")
     logger.info(f"Loading data from {input_path} ...")
     df = pd.read_csv(input_path, parse_dates=["Inspection Date"])
     logger.info(f"Loaded {len(df):,} rows × {df.shape[1]} columns.")
 
-    # ── Stage 1: Basic statistics ─────────────────────────────────────────────
     logger.info("Computing basic statistics ...")
     stats = compute_basic_stats(df)
     logger.info(
@@ -52,7 +33,6 @@ def main(
         f"{stats['full_duplicates']} full duplicates"
     )
 
-    # ── Stage 2: Domain quality checks ────────────────────────────────────────
     logger.info("Running domain quality checks ...")
     issues = run_quality_checks(df)
 
@@ -63,7 +43,6 @@ def main(
     else:
         logger.info("No quality issues found.")
 
-    # ── Stage 3: Great Expectations ───────────────────────────────────────────
     gx_results: dict = {"passed": None, "pass_count": 0, "fail_count": 0, "results": []}
 
     if not skip_gx:
@@ -77,7 +56,6 @@ def main(
     else:
         logger.info("Skipping Great Expectations (--skip-gx flag set).")
 
-    # ── Write report ──────────────────────────────────────────────────────────
     logger.info(f"Writing report to {output_dir}/ ...")
     report_path = write_report(
         stats=stats,
@@ -87,9 +65,10 @@ def main(
     )
     logger.success(f"Validation report saved → {report_path}")
 
-    # ── Exit with error code if validation failed ─────────────────────────────
     if gx_results["passed"] is False:
         raise typer.Exit(code=1)
+    
+    logger.info("Validations done.")
 
 
 if __name__ == "__main__":

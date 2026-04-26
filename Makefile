@@ -21,6 +21,10 @@ PIPELINES_DIR = science_the_data/
 run:
 	poetry run $(PYTHON_INTERPRETER) $(PIPELINES_DIR)main.py
 
+.PHNOY: dataset
+dataset:
+	poetry run $(PYTHON_INTERPRETER) $(PIPELINES_DIR)dataset.py
+
 ## Validate interim data and write report to reports/
 .PHONY: validate
 validate:
@@ -75,12 +79,6 @@ create_environment:
 #################################################################################
 # PROJECT RULES                                                                 #
 #################################################################################
-
-
-## Make dataset
-.PHONY: data
-data: requirements
-	$(PYTHON_INTERPRETER) science_the_data/dataset.py
 
 
 #################################################################################

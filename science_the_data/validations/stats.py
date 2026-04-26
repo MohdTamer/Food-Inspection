@@ -1,37 +1,10 @@
-"""
-stats.py
---------
-Compute basic dataset statistics and return them as plain dicts.
-Nothing is printed here — the report writer handles output.
-"""
-
 from __future__ import annotations
 
 import pandas as pd
 
-
-# ── Types ─────────────────────────────────────────────────────────────────────
-
-StatsReport = dict  # typed alias for readability
-
-
-# ── Public API ────────────────────────────────────────────────────────────────
+StatsReport = dict
 
 def compute_basic_stats(df: pd.DataFrame) -> StatsReport:
-    """
-    Return a dict with shape, dtypes, missing-value counts, and duplicate counts.
-
-    Returns
-    -------
-    {
-        "n_rows": int,
-        "n_cols": int,
-        "dtypes": {col: dtype_str, ...},
-        "missing": {col: {"count": int, "pct": float}, ...},   # only cols with missing
-        "full_duplicates": int,
-        "id_duplicates":   int,   # duplicate "Inspection ID" rows
-    }
-    """
     missing_raw = df.isnull().sum()
     missing_pct = (missing_raw / len(df) * 100).round(2)
 

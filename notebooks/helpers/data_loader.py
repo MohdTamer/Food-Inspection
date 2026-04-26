@@ -6,11 +6,16 @@ class DataLoader:
 
     INTERIM_DIR = BASE_DIR / 'interim'
     PROCESSED_DIR = BASE_DIR / 'processed'
+    RAW_DIR = BASE_DIR / 'raw'
 
     @staticmethod
     def interim(filename: str) -> Path:
         return DataLoader.INTERIM_DIR / filename
 
+    @staticmethod
+    def raw(filename: str) -> Path:
+        return DataLoader.RAW_DIR / filename
+    
     @staticmethod
     def processed(filename: str) -> Path:
         return DataLoader.PROCESSED_DIR / filename

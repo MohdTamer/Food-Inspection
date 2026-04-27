@@ -60,21 +60,28 @@ def check_risk(df: pd.DataFrame) -> Issue | None:
     return _issue("Risk", "Unexpected category values", len(bad), bad[:5])
 
 
+def check_city(df: pd.DataFrame) -> Issue | None:
+    if "City" not in df.columns:
+        return None
+
+    normalized = df["City"].dropna().str.strip().str.upper()
+    bad = normalized[normalized != "CHICAGO"].unique().tolist()
+
+    if not bad:
+        return None
+    return _issue("City", f"Non-CHICAGO values found", len(bad), bad[:5])
+
+
 def check_state(df: pd.DataFrame) -> Issue | None:
-    bad = df[df["State"] != "IL"]["State"].dropna().unique().tolist()
+    if "State" not in df.columns:
+        return None
+
+    normalized = df["State"].dropna().str.strip().str.upper()
+    bad = normalized[normalized != "IL"].unique().tolist()
 
     if not bad:
         return None
     return _issue("State", "Non-IL values found", len(bad), bad[:5])
-
-
-def check_city(df: pd.DataFrame) -> Issue | None:
-    bad = df[df["City"].str.upper() != "CHICAGO"]["City"].dropna().unique().tolist()
-
-    if not bad:
-        return None
-    return _issue("City", f"Non-CHICAGO values found ({len(bad)} unique)", len(bad), bad[:5])
-
 
 def check_zip(df: pd.DataFrame) -> Issue | None:
     bad = df[~df["Zip"].astype(str).str.match(r"^\d{5}$")]["Zip"].dropna().unique().tolist()

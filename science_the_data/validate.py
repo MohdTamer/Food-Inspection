@@ -14,10 +14,12 @@ app = typer.Typer()
 
 @app.command()
 def run_validations(
-    input_path: Path = PathResolver.get_raw_data_path("merged_inspections_licenses_inner.csv"),
+    input_path: Path = PathResolver.get_processed_data_path("output.csv"),
     output_dir: Path = PathResolver.REPORT_DIR,
     skip_gx:    bool = typer.Option(False, "--skip-gx", help="Skip Great Expectations (faster)"),
 ):
+    
+    #Unnamed: 0,Inspection ID,DBA Name,AKA Name,License #,Facility Type,Risk,Address,Zip,Inspection Date,Inspection Type,Results,Violations,Latitude,Longitude,BL_ID,BL_LICENSE_ID,ACCOUNT NUMBER,SITE NUMBER,BL_LEGAL_NAME,BL_DBA_NAME,BL_ADDRESS,BL_CITY,BL_STATE,BL_ZIP_CODE,WARD,PRECINCT,WARD PRECINCT,POLICE DISTRICT,COMMUNITY AREA,COMMUNITY AREA NAME,NEIGHBORHOOD,LICENSE CODE,LICENSE DESCRIPTION,BUSINESS ACTIVITY ID,BUSINESS ACTIVITY,LICENSE NUMBER,APPLICATION TYPE,APPLICATION CREATED DATE,APPLICATION REQUIREMENTS COMPLETE,PAYMENT DATE,CONDITIONAL APPROVAL,LICENSE TERM START DATE,LICENSE TERM EXPIRATION DATE,LICENSE APPROVED FOR ISSUANCE,DATE ISSUED,LICENSE STATUS,LICENSE STATUS CHANGE DATE,SSA,BL_LATITUDE,BL_LONGITUDE,BL_LOCATION,flag_non_il_state,flag_non_chicago_city,flag_longitude_outside_typical_range,violations_recorded,license_matched,has_prior_inspection
     logger.info("running validations")
     logger.info(f"Loading data from {input_path} ...")
     df = pd.read_csv(input_path, parse_dates=["Inspection Date"])

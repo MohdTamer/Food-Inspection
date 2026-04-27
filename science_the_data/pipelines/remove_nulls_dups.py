@@ -1,15 +1,14 @@
 from pathlib import Path
 from helpers.path_resolver import PathResolver
 from loguru import logger
-from tqdm import tqdm
 import pandas as pd
-import typer
 from helpers.path_resolver import PathResolver
 from helpers.pipeline_logger import PipelineLogger
-from science_the_data.cleaning.drop import drop_fully_nulls_columns, drop_exact_duplicates
+from science_the_data.pipelines.types import PipelineStage
+from science_the_data.cleaning.drop_nulls import drop_fully_nulls_columns, drop_exact_duplicates
 
-def remove_nulls_dups():
-    input_path = PathResolver.raw("merged_inspections_licenses_inner.csv")
+def remove_nulls_dups_pipeline(input_csv_name: str, output_stage: PipelineStage) -> str:
+    input_path = PathResolver.get_raw_data_path(input_csv_name)
     df = pd.read_csv(input_path, parse_dates=["Inspection Date"])
     df_clean = df.copy()
 
@@ -55,11 +54,20 @@ def remove_nulls_dups():
     )
     logger.info("Dropped records with duplicate inspection_id")
 
+    expected_rows_after_dedup = 196_825
+    tolerance = int(expected_rows_after_dedup * 0.05)
+    actual_rows_after_dedup = drop_inspection_id_duplication.shape[0]
+    logger.info('Shape after duplicate handling:', drop_inspection_id_duplication.shape)
+    logger.info(f'Rows after dedup: {actual_rows_after_dedup:,} (expected ~{expected_rows_after_dedup:,} +/- {tolerance:,})')
+
     path = Path("logs/logs.csv")
     pipeline_logger.save(path)
     logger.info("Saved logs to CSV file in: {}", path)
 
-    path = PathResolver.processed("cleaned_nulls_dups.csv")
+    cleanedCsvFileName = "cleaned_nulls_dups.csv"
+
+    path = PathResolver.get_data_path_from_stage(cleanedCsvFileName , output_stage)
     drop_inspection_id_duplication.to_csv(path)
     logger.info("Saved cleaned data to CSV file in: {}", path)
 
+    return cleanedCsvFileName

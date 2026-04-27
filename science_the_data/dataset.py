@@ -6,15 +6,15 @@ import pandas as pd
 import typer
 from helpers.path_resolver import PathResolver
 from helpers.pipeline_logger import PipelineLogger
-from science_the_data.cleaning.drop import drop_fully_nulls_columns, drop_exact_duplicates
+from science_the_data.cleaning.drop_nulls import drop_fully_nulls_columns, drop_exact_duplicates
 
 app = typer.Typer()
 
 
 @app.command()
 def main(
-    input_path: Path = PathResolver.raw("merged_inspections_licenses_inner.csv"),
-    output_path: Path = PathResolver.processed("output.csv"),
+    input_path: Path = PathResolver.get_raw_data_path("merged_inspections_licenses_inner.csv"),
+    output_path: Path = PathResolver.get_processed_data_path("output.csv"),
 ):
     df = pd.read_csv(input_path, parse_dates=["Inspection Date"])
     df_clean = df.copy()

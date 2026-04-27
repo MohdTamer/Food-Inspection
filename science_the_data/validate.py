@@ -12,12 +12,10 @@ from science_the_data.validations.report        import write_report
 
 app = typer.Typer()
 
-REPORTS_DIR = Path("reports")
-
 @app.command()
 def run_validations(
-    input_path: Path = PathResolver.raw("merged_inspections_licenses_inner.csv"),
-    output_dir: Path = REPORTS_DIR,
+    input_path: Path = PathResolver.get_raw_data_path("merged_inspections_licenses_inner.csv"),
+    output_dir: Path = PathResolver.REPORT_DIR,
     skip_gx:    bool = typer.Option(False, "--skip-gx", help="Skip Great Expectations (faster)"),
 ):
     logger.info("running validations")

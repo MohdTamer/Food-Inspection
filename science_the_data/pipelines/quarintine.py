@@ -8,7 +8,6 @@ from helpers.pipeline_logger import PipelineLogger
 from science_the_data.pipelines.types import PipelineStage
 from science_the_data.cleaning.quarintine import quarantine_missing_results
 
-
 def quarantine_pipeline(input_csv_name: str, output_stage: PipelineStage) -> str:
     input_path = PathResolver.get_interim_data_path(input_csv_name)
     df = pd.read_csv(input_path, parse_dates=["Inspection Date"])

@@ -7,6 +7,7 @@ class DataLoader:
     INTERIM_DIR = BASE_DIR / 'interim'
     PROCESSED_DIR = BASE_DIR / 'processed'
     RAW_DIR = BASE_DIR / 'raw'
+    CLEANED_DIR = BASE_DIR / "cleaned"
 
     @staticmethod
     def interim(filename: str) -> Path:
@@ -19,6 +20,10 @@ class DataLoader:
     @staticmethod
     def processed(filename: str) -> Path:
         return DataLoader.PROCESSED_DIR / filename
+    
+    @staticmethod
+    def cleaned(filename: str) -> Path:
+        return DataLoader.CLEANED_DIR / filename
 
 STAGE1_PATH = Path('../../data/interim/cleaning/cleaning_stage1.csv')
 STAGE1_LOG_PATH = Path('../../data/interim/cleaning/cleaning_stage1_log.csv')

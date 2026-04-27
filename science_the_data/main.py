@@ -22,7 +22,7 @@ def main():
     outputFileName = geo_blocking_pipeline(outputFileName, STAGE)
     validations_pipeline(outputFileName, STAGE)
 
-    STAGE = PipelineStage.PROCESSED
+    STAGE = PipelineStage.CLEANED
 
     final_csv_name = quarantine_pipeline(outputFileName, STAGE)
     validations_pipeline(final_csv_name, STAGE)

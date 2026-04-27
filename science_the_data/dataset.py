@@ -11,10 +11,6 @@ from helpers.pipeline_logger import PipelineLogger
 
 app = typer.Typer()
 
-# ---------------------------------------------------------------------------
-# Action 1 – Normalize key text fields, add city/state flags, drop originals
-# ---------------------------------------------------------------------------
-
 _TEXT_COLS = ["City", "State", "DBA Name", "AKA Name", "Address"]
 
 def normalize_text_fields(df: pd.DataFrame, pl: PipelineLogger) -> pd.DataFrame:
@@ -33,8 +29,6 @@ def normalize_text_fields(df: pd.DataFrame, pl: PipelineLogger) -> pd.DataFrame:
             .str.replace(r"^C+HICAGO$", "CHICAGO", regex=True)
         )
 
-    # Flags are added before the columns are dropped so downstream models can
-    # use them without touching the raw geo fields.
     if "State" in df.columns:
         df["flag_non_il_state"] = df["State"].notna() & (df["State"] != "IL")
     if "City" in df.columns:
@@ -55,10 +49,6 @@ def normalize_text_fields(df: pd.DataFrame, pl: PipelineLogger) -> pd.DataFrame:
     logger.info(f"[normalize_text_fields] shape: {df.shape}")
     return df
 
-
-# ---------------------------------------------------------------------------
-# Action 2 – Longitude quality flag
-# ---------------------------------------------------------------------------
 
 _LON_LO = -87.95
 _LON_HI = -87.5
@@ -87,11 +77,6 @@ def add_longitude_flag(df: pd.DataFrame, pl: PipelineLogger) -> pd.DataFrame:
     )
     return df
 
-
-# ---------------------------------------------------------------------------
-# Action 3 – Cast types, remove leakage, build informative flags
-# ---------------------------------------------------------------------------
-
 _INT_COLS = [
     "Inspection ID", "License #", "LICENSE NUMBER", "BL_LICENSE_ID",
     "ACCOUNT NUMBER", "SITE NUMBER", "WARD", "PRECINCT", "POLICE DISTRICT",
@@ -112,28 +97,23 @@ def cast_types_and_build_flags(df: pd.DataFrame, pl: PipelineLogger) -> pd.DataF
     rows_before, cols_before = df.shape
     df = df.copy()
 
-    # --- Integer columns ---
     for col in _INT_COLS:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce").round().astype("Int64")
 
-    # --- Float columns ---
     for col in _FLOAT_COLS:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
 
-    # --- Date columns ---
     for col in _DATE_COLS:
         if col in df.columns:
             df[col] = pd.to_datetime(df[col], errors="coerce")
 
-    # --- Zip: preserve leading zeros ---
     if "Zip" in df.columns:
         zip_num = pd.to_numeric(df["Zip"], errors="coerce")
         df["Zip"] = zip_num.astype("Int64").astype("string").str.zfill(5)
         df.loc[zip_num.isna(), "Zip"] = pd.NA
 
-    # --- Risk standardisation ---
     if "Risk" in df.columns:
         risk_map = {
             "Risk 1 (High)": "High",
@@ -149,7 +129,6 @@ def cast_types_and_build_flags(df: pd.DataFrame, pl: PipelineLogger) -> pd.DataF
             risk = risk.fillna(mode_by_facility)
         df["Risk"] = risk.fillna("Unknown")
 
-    # --- Leakage fix: future LICENSE TERM START DATE relative to Inspection Date ---
     nulled_leakage = 0
     if {"Inspection Date", "LICENSE TERM START DATE"}.issubset(df.columns):
         mask = (
@@ -161,7 +140,6 @@ def cast_types_and_build_flags(df: pd.DataFrame, pl: PipelineLogger) -> pd.DataF
         nulled_leakage = int(mask.sum())
         logger.info(f"[cast_types] nulled {nulled_leakage:,} future LICENSE TERM START DATE values")
 
-    # --- Informative flags ---
     if "Violations" in df.columns:
         violations_str = df["Violations"].astype("string").str.strip()
         df["violations_recorded"] = violations_str.notna() & violations_str.ne("")
@@ -192,7 +170,6 @@ def cast_types_and_build_flags(df: pd.DataFrame, pl: PipelineLogger) -> pd.DataF
         else:
             df["has_prior_inspection"] = False
 
-    # --- Drop raw location string (redundant with Lat/Lon) ---
     if "Location" in df.columns:
         df = df.drop(columns=["Location"])
 

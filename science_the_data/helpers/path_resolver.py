@@ -17,6 +17,7 @@ class PathResolver:
     INTERIM_DATA_DIR = DATA_DIR / 'interim'
     CLEANED_DATA_DIR = DATA_DIR / 'cleaned'
     PROCESSED_DATA_DIR = DATA_DIR / 'processed'
+    QUARANTINED_DATA_DIR = DATA_DIR / "quarantined"
 
     RAW_MD_REPORTS_DIR = MD_DIR / 'raw'
     INTERIM_MD_REPORTS_DIR = MD_DIR / 'interim'
@@ -38,6 +39,10 @@ class PathResolver:
     @staticmethod
     def get_processed_data_path(filename: str) -> Path:
         return PathResolver.PROCESSED_DATA_DIR / filename
+    
+    @staticmethod
+    def get_quarintined_data_path(filename: str) -> Path:
+        return PathResolver.QUARANTINED_DATA_DIR / filename
     
     @staticmethod
     def get_raw_report_path(filename: str) -> Path:
@@ -68,6 +73,9 @@ class PathResolver:
 
         elif stage == PipelineStage.CLEANED:
             csv_path = PathResolver.get_cleaned_data_path(filename)
+            
+        elif stage == PipelineStage.QUARANTINED:
+            csv_path = PathResolver.get_quarintined_data_path(filename)
 
         else:
             raise ValueError(f"Unsupported stage: {stage}")

@@ -5,3 +5,4 @@ class PipelineStage(Enum):
     INTERIM = "interim"
     CLEANED = "cleaned"
     PROCESSED = "processed"
+    QUARANTINED = "quarantined"

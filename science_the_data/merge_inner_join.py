@@ -23,9 +23,9 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 # ── Paths ────────────────────────────────────────────────────────────────────
-FOOD_PATH    = Path("../data/raw/food-inspections.csv")
-LICENSE_PATH = Path("../data/raw/Business_Licenses.csv")
-OUTPUT_PATH  = Path("../data/interim/merged_inspections_licenses_inner.csv")
+FOOD_PATH    = Path("data/raw/food-inspections.csv")
+LICENSE_PATH = Path("data/raw/Business_Licenses.csv")
+OUTPUT_PATH  = Path("data/interim/merged_inspections_licenses_inner.csv")
 
 
 def load_food_inspections(path: Path) -> pd.DataFrame:

@@ -5,7 +5,11 @@
 PROJECT_NAME = Food-Inspection
 PYTHON_VERSION = 3.13
 PYTHON_INTERPRETER = python
-
+ifeq ($(OS),Windows_NT)
+    DETECTED_OS := Windows
+else
+    DETECTED_OS := $(shell uname -s)
+endif
 
 #################################################################################
 # PATHS                                                                         #
@@ -65,6 +69,25 @@ format:
 test:
 	python -m pytest tests
 
+## Remove pycache and test artifacts
+.PHONY: clean-tests
+clean-tests:
+ifeq ($(DETECTED_OS),Windows)
+	@echo Cleaning on Windows...
+	@for /r . %%f in (*.pyc *.pyo) do @del /q "%%f" 2>nul || true
+	@for /d /r . %%d in (__pycache__) do @if exist "%%d" rd /s /q "%%d" 2>nul || true
+	@if exist "tests\__pycache__" rd /s /q "tests\__pycache__"
+	@if exist "tests\.pytest_cache" rd /s /q "tests\.pytest_cache"
+	@echo Cleaned pycache and test artifacts on Windows.
+else
+	@echo Cleaning on $(DETECTED_OS)...
+	find . -type f -name "*.py[co]" -delete
+	find . -type d -name "__pycache__" -delete
+	rm -rf tests/__pycache__
+	rm -rf tests/.pytest_cache
+	@echo Cleaned pycache and test artifacts on $(DETECTED_OS).
+endif
+
 ## Set up Python interpreter environment
 .PHONY: create_environment
 create_environment:
@@ -72,13 +95,6 @@ create_environment:
 	@echo ">>> Poetry environment created. Activate with: "
 	@echo '$$(poetry env activate)'
 	@echo ">>> Or run commands with:\npoetry run <command>"
-
-
-
-
-#################################################################################
-# PROJECT RULES                                                                 #
-#################################################################################
 
 
 #################################################################################

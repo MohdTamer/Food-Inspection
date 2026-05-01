@@ -10,9 +10,6 @@ from __future__ import annotations
 import great_expectations as gx
 import pandas as pd
 
-
-# ── Constants ─────────────────────────────────────────────────────────────────
-
 EXPECTED_COLUMNS = [
     "Inspection ID", "DBA Name", "AKA Name", "License#",
     "Facility Type", "Risk", "Address", "City", "State",
@@ -23,30 +20,23 @@ EXPECTED_COLUMNS = [
 NOT_NULL_COLUMNS = ["Inspection ID", "DBA Name", "Inspection Date", "Results", "Risk"]
 
 
-# ── Suite builder ─────────────────────────────────────────────────────────────
-
 def _build_suite() -> gx.ExpectationSuite:
     """Define all expectations and return the suite object."""
 
     suite = gx.ExpectationSuite(name="inspections_suite")
-
-    # Schema
     suite.add_expectation(
         gx.expectations.ExpectTableColumnsToMatchSet(column_set=EXPECTED_COLUMNS) # type: ignore
     )
 
-    # Completeness
     for col in NOT_NULL_COLUMNS:
         suite.add_expectation(
             gx.expectations.ExpectColumnValuesToNotBeNull(column=col) # type: ignore
         )
 
-    # Uniqueness
     suite.add_expectation(
         gx.expectations.ExpectColumnValuesToBeUnique(column="Inspection ID") # type: ignore
     )
 
-    # Numeric ranges
     suite.add_expectation(
         gx.expectations.ExpectColumnValuesToBeBetween( # type: ignore
             column="Latitude", min_value=41.6, max_value=42.1
@@ -58,12 +48,9 @@ def _build_suite() -> gx.ExpectationSuite:
         )
     )
 
-    # Format
     suite.add_expectation(
         gx.expectations.ExpectColumnValuesToMatchRegex(column="Zip", regex=r"^\d{5}$") # type: ignore
     )
-
-    # Categories
     suite.add_expectation(
         gx.expectations.ExpectColumnValuesToBeInSet( # type: ignore
             column="Results",
@@ -71,28 +58,26 @@ def _build_suite() -> gx.ExpectationSuite:
                        "Out of Business", "Business Not Located", "No Entry", "Not Ready"],
         )
     )
+
     suite.add_expectation(
         gx.expectations.ExpectColumnValuesToBeInSet( # type: ignore
             column="Risk",
             value_set=["Risk 1 (High)", "Risk 2 (Medium)", "Risk 3 (Low)", "All"],
         )
     )
+
     suite.add_expectation(
         gx.expectations.ExpectColumnValuesToBeInSet(column="State", value_set=["IL"]) # type: ignore
     )
     suite.add_expectation(
         gx.expectations.ExpectColumnValuesToBeInSet(column="City", value_set=["CHICAGO"]) # type: ignore
     )
-
-    # Row count sanity
     suite.add_expectation(
         gx.expectations.ExpectTableRowCountToBeBetween(min_value=1_000, max_value=500_000) # type: ignore
     )
 
     return suite
 
-
-# ── Results parser ────────────────────────────────────────────────────────────
 
 def _parse_results(raw_results) -> list[dict]:
     """
@@ -111,9 +96,6 @@ def _parse_results(raw_results) -> list[dict]:
             "sample":           result.get("partial_unexpected_list", [])[:3],
         })
     return parsed
-
-
-# ── Public API ────────────────────────────────────────────────────────────────
 
 def run_gx_validation(df: pd.DataFrame) -> dict:
     """

@@ -6,16 +6,13 @@ All three sections (stats, quality, GX) are written in one pass.
 """
 
 from __future__ import annotations
-
+from validations.types import Issue
 from datetime import datetime
 from pathlib import Path
 
-
-# ── Public API ────────────────────────────────────────────────────────────────
-
 def write_report(
     stats:      dict,
-    issues:     list[dict],
+    issues:     list[Issue],
     gx_results: dict,
     output_dir: Path,
     filename:   str | None = None,
@@ -40,12 +37,10 @@ def write_report(
     lines: list[str] = []
     _append = lines.append
 
-    # ── Header ────────────────────────────────────────────────────────────────
     _append(f"# Validation Report")
     _append(f"\nGenerated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
     _append("---\n")
 
-    # ── Section 1: Basic Statistics ───────────────────────────────────────────
     _append("## 1. Basic Statistics\n")
     _append(f"| Metric | Value |")
     _append(f"|--------|-------|")
@@ -55,7 +50,6 @@ def write_report(
     _append(f"| Duplicate Inspection IDs | {stats['id_duplicates']:,} |")
     _append("")
 
-    # Data types table
     _append("### Column Data Types\n")
     _append("| Column | Type |")
     _append("|--------|------|")
@@ -63,10 +57,9 @@ def write_report(
         _append(f"| {col} | `{dtype}` |")
     _append("")
 
-    # Missing values
     _append("### Missing Values\n")
     if not stats["missing"]:
-        _append("✅ No missing values found.\n")
+        _append("No missing values found.\n")
     else:
         _append("| Column | Missing Count | Missing % |")
         _append("|--------|---------------|-----------|")
@@ -79,9 +72,9 @@ def write_report(
     _append("## 2. Domain Quality Checks\n")
 
     if not issues:
-        _append("✅ No quality issues detected.\n")
+        _append("No quality issues detected.\n")
     else:
-        _append(f"⚠️ **{len(issues)} issue(s) found.**\n")
+        _append(f"**{len(issues)} issue(s) found.**\n")
         _append("| Field | Issue | Count | Sample |")
         _append("|-------|-------|-------|--------|")
         for issue in issues:
@@ -93,7 +86,7 @@ def write_report(
     _append("---\n")
     _append("## 3. Great Expectations Suite\n")
 
-    status_icon = "✅ PASSED" if gx_results["passed"] else "❌ FAILED"
+    status_icon = "PASSED" if gx_results["passed"] else "FAILED"
     _append(f"**Overall Result: {status_icon}**\n")
     _append(f"| Passed | Failed | Total |")
     _append(f"|--------|--------|-------|")
@@ -108,10 +101,9 @@ def write_report(
     _append("| Status | Expectation | Column | Unexpected Count | Sample |")
     _append("|--------|-------------|--------|-----------------|--------|")
     for r in gx_results["results"]:
-        icon    = "✅" if r["passed"] else "❌"
         count   = r["unexpected_count"] or "—"
         sample  = ", ".join(str(s) for s in r["sample"]) if r["sample"] else "—"
-        _append(f"| {icon} | `{r['type']}` | {r['column']} | {count} | {sample} |")
+        _append(f"| `{r['type']}` | {r['column']} | {count} | {sample} |")
     _append("")
 
     path.write_text("\n".join(lines), encoding="utf-8")

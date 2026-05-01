@@ -5,9 +5,12 @@ build-backend = "poetry.core.masonry.api"
 [project]
 name = "science_the_data"
 version = "0.0.1"
-description = "A short description of the project."
+description = "Food inspection data analysis."
 authors = [
-  { name = "tamer" },
+  { name = "Tamer" },
+  { name = "Omar Gamal" },
+  { name = "Amr Ehab" },
+  { name = "Omar Mahmoud" },
 ]
 
 readme = "README.md"

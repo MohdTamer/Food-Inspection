@@ -8,7 +8,7 @@ from science_the_data.helpers.path_resolver     import PathResolver
 from science_the_data.validations.stats         import compute_basic_stats
 from science_the_data.validations.quality       import run_quality_checks
 from science_the_data.validations.expectations  import run_gx_validation
-from science_the_data.validations.report        import write_report
+from science_the_data.reports.report            import write_report
 
 app = typer.Typer()
 
@@ -57,10 +57,11 @@ def run_validations(
 
     logger.info(f"Writing report to {output_dir}/ ...")
     report_path = write_report(
-        stats=stats,
-        issues=issues,
-        gx_results=gx_results,
-        output_dir=output_dir,
+        stats,
+        issues,
+        gx_results,
+        output_dir,
+        skip_gx,
     )
     logger.success(f"Validation report saved → {report_path}")
 

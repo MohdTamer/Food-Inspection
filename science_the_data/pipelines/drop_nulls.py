@@ -34,7 +34,7 @@ def remove_nulls_dups_pipeline(input_csv_name: str, output_stage: PipelineStage)
         df_clean.shape[1], 
         df_drop_nulls.shape[1], 
     )
-    logger.info("Dropped fully null rows")
+    logger.info("Dropped fully null columns")
 
     df_drop_exact_duplicates = drop_exact_duplicates(df_drop_nulls)
     pipeline_logger.log_step(
@@ -64,7 +64,7 @@ def remove_nulls_dups_pipeline(input_csv_name: str, output_stage: PipelineStage)
     logger.info('Shape after duplicate handling:', df_deduped.shape)
     logger.info(f'Rows after dedup: {actual_rows_after_dedup:,} (expected ~{expected_rows_after_dedup:,} +/- {tolerance:,})')
 
-    path = Path("logs/logs.csv")
+    path = Path("logs/drop_nulls.csv")
     pipeline_logger.save(path)
     logger.info("Saved logs to CSV file in: {}", path)
 

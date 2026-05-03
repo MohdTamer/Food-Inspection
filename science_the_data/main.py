@@ -1,5 +1,5 @@
 from pipelines.validations import validations_pipeline
-from science_the_data.pipelines.types import PipelineStage
+from science_the_data.helpers.types import PipelineStage
 from science_the_data.pipelines.drop_nulls import remove_nulls_dups_pipeline
 from pipelines.geo_features import geo_blocking_pipeline
 from pipelines.quarintine import quarantine_pipeline
@@ -34,21 +34,29 @@ def main():
     validations_pipeline(quarntined, STAGE)
     # quarntined = "clean_final.csv"
 
-    train_csv, test_csv, eda = splitting_pipeline(
+    train_csv, val_csv, test_csv, eda = splitting_pipeline(
         input_csv_name=quarntined,
         input_stage=PipelineStage.CLEANED,
         output_stage=PipelineStage.PROCESSED,
     )
-    validations_pipeline(train_csv, PipelineStage.PROCESSED, eda)
-    validations_pipeline(test_csv,  PipelineStage.PROCESSED, eda)
 
-    train_csv, test_csv = transformations_pipeline(train_csv, test_csv, PipelineStage.PROCESSED)
-    validations_pipeline(train_csv,  PipelineStage.PROCESSED)
-    validations_pipeline(test_csv,  PipelineStage.PROCESSED)
+    STAGE = PipelineStage.PROCESSED
 
-    train_csv, test_csv = feature_engineering_pipeline(train_csv, test_csv, PipelineStage.PROCESSED)
-    validations_pipeline(train_csv, PipelineStage.PROCESSED)
-    validations_pipeline(test_csv,  PipelineStage.PROCESSED)
+    apply_validation_pipeline_to_list((train_csv, val_csv, test_csv), STAGE, eda)
+
+    train_csv, val_csv, test_csv = transformations_pipeline(
+        train_csv, val_csv, test_csv, PipelineStage.PROCESSED
+    )
+    apply_validation_pipeline_to_list((train_csv, val_csv, test_csv), STAGE)
+
+    train_csv, val_csv, test_csv = feature_engineering_pipeline(
+        train_csv, val_csv, test_csv, PipelineStage.PROCESSED
+    )
+    apply_validation_pipeline_to_list((train_csv, val_csv, test_csv), STAGE)
+
+def apply_validation_pipeline_to_list(csv_names: tuple, stage: PipelineStage, eda = None) -> None:
+    for item in csv_names:
+        validations_pipeline(item, stage, eda)
 
 if __name__ == "__main__":
     app()

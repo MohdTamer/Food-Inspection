@@ -4,7 +4,7 @@ from loguru import logger
 from pathlib import Path
 
 from helpers.path_resolver import PathResolver
-from science_the_data.pipelines.types import PipelineStage
+from science_the_data.helpers.types import PipelineStage
 from reports.sections.eda import render_eda
 from science_the_data.helpers.path_resolver import PathResolver
 from science_the_data.validations.stats import compute_basic_stats

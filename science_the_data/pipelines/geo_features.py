@@ -5,7 +5,7 @@ from loguru import logger
 
 from helpers.path_resolver import PathResolver
 from helpers.pipeline_logger import PipelineLogger
-from science_the_data.pipelines.types import PipelineStage
+from science_the_data.helpers.types import PipelineStage
 from science_the_data.cleaning.geo_features import (
     normalize_text_fields,
     add_longitude_flag,

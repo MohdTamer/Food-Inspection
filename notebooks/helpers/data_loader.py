@@ -27,6 +27,10 @@ class DataLoader:
         return DataLoader.CLEANED_DIR / filename
 
     @staticmethod
+    def val(filename: str) -> Path:
+        return DataLoader.PROCESSED_DIR / filename
+
+    @staticmethod
     def transformed(filename: str) -> Path:
         DataLoader.TRANSFORMED_DIR.mkdir(parents=True, exist_ok=True)
         return DataLoader.TRANSFORMED_DIR / filename
@@ -39,6 +43,8 @@ PROCESSED_PATH = Path('../../data/processed/merged_inspections_licenses_inner_cl
 PROCESSED_PARQUET_PATH = Path('../../data/processed/merged_inspections_licenses_inner_clean.parquet')
 TRAIN_CSV_PATH = Path('../../data/processed/train.csv')
 TRAIN_PARQUET_PATH = Path('../../data/processed/train.parquet')
+VAL_CSV_PATH = Path('../../data/processed/val.csv')
+VAL_PARQUET_PATH = Path('../../data/processed/val.parquet')
 TEST_CSV_PATH = Path('../../data/processed/test.csv')
 TEST_PARQUET_PATH = Path('../../data/processed/test.parquet')
 LOG_PATH = Path('../../data/interim/cleaning_log.csv')

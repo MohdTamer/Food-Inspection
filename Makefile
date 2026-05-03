@@ -29,16 +29,6 @@ run:
 dataset:
 	poetry run $(PYTHON_INTERPRETER) $(PIPELINES_DIR)dataset.py
 
-## Validate interim data and write report to reports/
-.PHONY: validate
-validate:
-	poetry run $(PYTHON_INTERPRETER) science_the_data/validate.py
-
-## Validate without running Great Expectations (much faster)
-.PHONY: validate-fast  
-validate-fast:
-	poetry run $(PYTHON_INTERPRETER) science_the_data/validate.py --skip-gx
-
 ## Install Python dependencies
 .PHONY: requirements
 requirements:

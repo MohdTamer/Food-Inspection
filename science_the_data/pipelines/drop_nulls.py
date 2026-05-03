@@ -71,7 +71,7 @@ def remove_nulls_dups_pipeline(input_csv_name: str, output_stage: PipelineStage)
     cleanedCsvFileName = "cleaned_nulls_dups.csv"
 
     path = PathResolver.get_data_path_from_stage(cleanedCsvFileName , output_stage)
-    df_deduped.to_csv(path)
+    df_deduped.to_csv(path, index=False)
     logger.info("Saved cleaned data to CSV file in: {}", path)
 
     return cleanedCsvFileName

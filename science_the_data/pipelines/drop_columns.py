@@ -1,14 +1,15 @@
 from pathlib import Path
+
 from loguru import logger
 import pandas as pd
 
 from helpers.path_resolver import PathResolver
 from helpers.pipeline_logger import PipelineLogger
-from science_the_data.helpers.types import PipelineStage
 from science_the_data.cleaning.drop_useless_columns import (
-    drop_useless_columns,
     COLS_TO_DROP,
+    drop_useless_columns,
 )
+from science_the_data.helpers.types import PipelineStage
 
 
 def drop_useless_columns_pipeline(input_csv_name: str, output_stage: PipelineStage) -> str:

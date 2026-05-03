@@ -1,12 +1,13 @@
 from pathlib import Path
 
-import pandas as pd
 from loguru import logger
+import pandas as pd
 
 from helpers.path_resolver import PathResolver
 from helpers.pipeline_logger import PipelineLogger
-from science_the_data.helpers.types import PipelineStage
 from science_the_data.cleaning.quarintine import quarantine_missing_results
+from science_the_data.helpers.types import PipelineStage
+
 
 def quarantine_pipeline(input_csv_name: str, output_stage: PipelineStage) -> str:
     input_path = PathResolver.get_interim_data_path(input_csv_name)

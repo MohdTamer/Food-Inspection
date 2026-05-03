@@ -24,10 +24,10 @@ from __future__ import annotations
 from datetime import datetime
 from pathlib import Path
 
-from validations.types import Issue
 from reports.sections.gx import render_gx
 from reports.sections.quality import render_quality
 from reports.sections.stats import render_stats
+from validations.types import Issue
 
 
 def _build_header() -> list[str]:

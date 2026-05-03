@@ -2,27 +2,27 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pandas as pd
 from loguru import logger
+import pandas as pd
 
 from helpers.path_resolver import PathResolver
 from helpers.pipeline_logger import PipelineLogger
-from science_the_data.helpers.types import (SplitData, PipelineStage)
-from science_the_data.helpers.splits_io import save_splits
 from science_the_data.eda.eda_split import compute_eda_stats
+from science_the_data.helpers.splits_io import save_splits
+from science_the_data.helpers.types import PipelineStage, SplitData
 
 TARGET_COL = "Results"
 DATE_COL = "Inspection Date"
 ID_COL = "Inspection ID"
 
 TEST_FRACTION = 0.20
-VAL_FRACTION  = 0.20
+VAL_FRACTION = 0.20
 
 _STAGE_FOLDER: dict[PipelineStage, str] = {
-    PipelineStage.RAW:         "raw",
-    PipelineStage.INTERIM:     "interim",
-    PipelineStage.CLEANED:     "cleaned",
-    PipelineStage.PROCESSED:   "processed",
+    PipelineStage.RAW: "raw",
+    PipelineStage.INTERIM: "interim",
+    PipelineStage.CLEANED: "cleaned",
+    PipelineStage.PROCESSED: "processed",
     PipelineStage.QUARANTINED: "quarantined",
 }
 
@@ -54,7 +54,9 @@ def splitting_pipeline(
     if null_dates:
         logger.warning(
             "Dropping {} row(s) with null '{}' ({:.2f}% of data).",
-            null_dates, DATE_COL, null_dates / len(df) * 100,
+            null_dates,
+            DATE_COL,
+            null_dates / len(df) * 100,
         )
         rows_before_drop = len(df)
         df = df.dropna(subset=[DATE_COL]).copy()
@@ -75,28 +77,32 @@ def splitting_pipeline(
 
     df = df.sort_values(DATE_COL).reset_index(drop=True)
 
-    cutoff_idx  = int(len(df) * (1 - test_fraction))
+    cutoff_idx = int(len(df) * (1 - test_fraction))
     cutoff_date = df.loc[cutoff_idx, DATE_COL]
 
     logger.info(
         "Cutoff date: {}  (index {}/{})",
-        cutoff_date.date(), cutoff_idx, len(df), # type: ignore
+        cutoff_date.date(),
+        cutoff_idx,
+        len(df),  # type: ignore
     )
 
     train_mask = df[DATE_COL] < cutoff_date
-    df_train   = df.loc[train_mask].copy().reset_index(drop=True)
-    df_test    = df.loc[~train_mask].copy()
+    df_train = df.loc[train_mask].copy().reset_index(drop=True)
+    df_test = df.loc[~train_mask].copy()
 
     # Carve validation from the tail of train
-    val_cutoff_idx  = int(len(df_train) * (1 - val_fraction))
+    val_cutoff_idx = int(len(df_train) * (1 - val_fraction))
     val_cutoff_date = df_train.loc[val_cutoff_idx, DATE_COL]
-    val_mask        = df_train[DATE_COL] >= val_cutoff_date
-    df_val   = df_train.loc[val_mask].copy()
+    val_mask = df_train[DATE_COL] >= val_cutoff_date
+    df_val = df_train.loc[val_mask].copy()
     df_train = df_train.loc[~val_mask].copy()
 
     logger.info(
         "Val cutoff date: {}  (index {}/{})",
-        val_cutoff_date.date(), val_cutoff_idx, len(df_train) + len(df_val), # type: ignore
+        val_cutoff_date.date(),
+        val_cutoff_idx,
+        len(df_train) + len(df_val),  # type: ignore
     )
 
     for label, subset in [("train", df_train), ("val", df_val), ("test", df_test)]:
@@ -106,14 +112,17 @@ def splitting_pipeline(
             rows_after=len(subset),
             cols_before=df.shape[1],
             cols_after=subset.shape[1],
-            note=f"test_cutoff={cutoff_date.date()}, val_cutoff={val_cutoff_date.date()}", # type: ignore
+            note=f"test_cutoff={cutoff_date.date()}, val_cutoff={val_cutoff_date.date()}",  # type: ignore
         )
 
     logger.info(
         "Train: {:,} rows ({:.1f}%)  |  Val: {:,} rows ({:.1f}%)  |  Test: {:,} rows ({:.1f}%)",
-        len(df_train), len(df_train) / len(df) * 100,
-        len(df_val),   len(df_val)   / len(df) * 100,
-        len(df_test),  len(df_test)  / len(df) * 100,
+        len(df_train),
+        len(df_train) / len(df) * 100,
+        len(df_val),
+        len(df_val) / len(df) * 100,
+        len(df_test),
+        len(df_test) / len(df) * 100,
     )
 
     _assert_no_leakage(df_train, df_val, df_test)
@@ -123,16 +132,20 @@ def splitting_pipeline(
         df=df,
         df_train=df_train,
         df_test=df_test,
-        cutoff_date=cutoff_date, # type: ignore
+        cutoff_date=cutoff_date,  # type: ignore
         figures_dir=figures_dir,
     )
 
-    train_csv_name, val_csv_name, test_csv_name = "split_train.csv", "split_validation.csv", "split_test.csv"
+    train_csv_name, val_csv_name, test_csv_name = (
+        "split_train.csv",
+        "split_validation.csv",
+        "split_test.csv",
+    )
 
     save_splits(
         train=SplitData(df=df_train, file_name=train_csv_name),
-        val=SplitData(df=df_val,     file_name=val_csv_name),
-        test=SplitData(df=df_test,   file_name=test_csv_name),
+        val=SplitData(df=df_val, file_name=val_csv_name),
+        test=SplitData(df=df_test, file_name=test_csv_name),
         stage=output_stage,
     )
 
@@ -143,15 +156,16 @@ def splitting_pipeline(
 
     return train_csv_name, val_csv_name, test_csv_name, eda
 
+
 def _assert_no_leakage(
     df_train: pd.DataFrame,
     df_val: pd.DataFrame,
     df_test: pd.DataFrame,
 ) -> None:
     for a_name, a, b_name, b in [
-        ("train", df_train, "val",  df_val),
+        ("train", df_train, "val", df_val),
         ("train", df_train, "test", df_test),
-        ("val",   df_val,   "test", df_test),
+        ("val", df_val, "test", df_test),
     ]:
         shared = set(a[ID_COL]) & set(b[ID_COL])
         assert not shared, (

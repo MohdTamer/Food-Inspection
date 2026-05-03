@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from loguru import logger
 import pandas as pd
 import typer
-from loguru import logger
 
 from helpers.path_resolver import PathResolver
 from helpers.pipeline_logger import PipelineLogger
@@ -12,6 +12,7 @@ from helpers.pipeline_logger import PipelineLogger
 app = typer.Typer()
 
 _TEXT_COLS = ["City", "State", "DBA Name", "AKA Name", "Address"]
+
 
 def normalize_text_fields(df: pd.DataFrame, pl: PipelineLogger) -> pd.DataFrame:
     rows_before, cols_before = df.shape
@@ -53,6 +54,7 @@ def normalize_text_fields(df: pd.DataFrame, pl: PipelineLogger) -> pd.DataFrame:
 _LON_LO = -87.95
 _LON_HI = -87.5
 
+
 def add_longitude_flag(df: pd.DataFrame, pl: PipelineLogger) -> pd.DataFrame:
     rows_before, cols_before = df.shape
     df = df.copy()
@@ -77,21 +79,42 @@ def add_longitude_flag(df: pd.DataFrame, pl: PipelineLogger) -> pd.DataFrame:
     )
     return df
 
+
 _INT_COLS = [
-    "Inspection ID", "License #", "LICENSE NUMBER", "BL_LICENSE_ID",
-    "ACCOUNT NUMBER", "SITE NUMBER", "WARD", "PRECINCT", "POLICE DISTRICT",
-    "COMMUNITY AREA", "LICENSE CODE", "SSA", "BL_ZIP_CODE",
+    "Inspection ID",
+    "License #",
+    "LICENSE NUMBER",
+    "BL_LICENSE_ID",
+    "ACCOUNT NUMBER",
+    "SITE NUMBER",
+    "WARD",
+    "PRECINCT",
+    "POLICE DISTRICT",
+    "COMMUNITY AREA",
+    "LICENSE CODE",
+    "SSA",
+    "BL_ZIP_CODE",
 ]
 _FLOAT_COLS = ["Latitude", "Longitude", "BL_LATITUDE", "BL_LONGITUDE"]
 _DATE_COLS = [
-    "Inspection Date", "APPLICATION CREATED DATE",
-    "APPLICATION REQUIREMENTS COMPLETE", "PAYMENT DATE",
-    "LICENSE TERM START DATE", "LICENSE TERM EXPIRATION DATE",
-    "LICENSE APPROVED FOR ISSUANCE", "DATE ISSUED", "LICENSE STATUS CHANGE DATE",
+    "Inspection Date",
+    "APPLICATION CREATED DATE",
+    "APPLICATION REQUIREMENTS COMPLETE",
+    "PAYMENT DATE",
+    "LICENSE TERM START DATE",
+    "LICENSE TERM EXPIRATION DATE",
+    "LICENSE APPROVED FOR ISSUANCE",
+    "DATE ISSUED",
+    "LICENSE STATUS CHANGE DATE",
 ]
 _PRIOR_KEY_CANDIDATES = [
-    "BL_LICENSE_ID", "License #", "LICENSE NUMBER", "DBA Name", "AKA Name",
+    "BL_LICENSE_ID",
+    "License #",
+    "LICENSE NUMBER",
+    "DBA Name",
+    "AKA Name",
 ]
+
 
 def cast_types_and_build_flags(df: pd.DataFrame, pl: PipelineLogger) -> pd.DataFrame:
     rows_before, cols_before = df.shape
@@ -138,7 +161,9 @@ def cast_types_and_build_flags(df: pd.DataFrame, pl: PipelineLogger) -> pd.DataF
         )
         df.loc[mask, "LICENSE TERM START DATE"] = pd.NaT
         nulled_leakage = int(mask.sum())
-        logger.info(f"[cast_types] nulled {nulled_leakage:,} future LICENSE TERM START DATE values")
+        logger.info(
+            f"[cast_types] nulled {nulled_leakage:,} future LICENSE TERM START DATE values"
+        )
 
     if "Violations" in df.columns:
         violations_str = df["Violations"].astype("string").str.strip()
@@ -152,18 +177,10 @@ def cast_types_and_build_flags(df: pd.DataFrame, pl: PipelineLogger) -> pd.DataF
         df["license_matched"] = False
 
     if "Inspection Date" in df.columns:
-        prior_key = next(
-            (c for c in _PRIOR_KEY_CANDIDATES if c in df.columns), None
-        )
+        prior_key = next((c for c in _PRIOR_KEY_CANDIDATES if c in df.columns), None)
         if prior_key is not None:
             ordered_idx = df.sort_values([prior_key, "Inspection Date"]).index
-            cumcount = (
-                df.loc[ordered_idx]
-                .groupby(prior_key)
-                .cumcount()
-                .gt(0)
-                .to_numpy()
-            )
+            cumcount = df.loc[ordered_idx].groupby(prior_key).cumcount().gt(0).to_numpy()
             has_prior = pd.Series(False, index=df.index)
             has_prior.loc[ordered_idx] = cumcount
             df["has_prior_inspection"] = has_prior
@@ -186,6 +203,7 @@ def cast_types_and_build_flags(df: pd.DataFrame, pl: PipelineLogger) -> pd.DataF
     )
     logger.info(f"[cast_types_and_build_flags] shape: {df.shape}")
     return df
+
 
 @app.command()
 def main(

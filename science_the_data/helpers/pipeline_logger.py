@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-import pandas as pd
-from dataclasses import dataclass, asdict, field
+from dataclasses import asdict
 from pathlib import Path
-from datetime import datetime
-from typing import List, Optional
+from typing import List
+
+import pandas as pd
+
 from science_the_data.helpers.types import LogEntry
-    
+
+
 class PipelineLogger:
     def __init__(self) -> None:
         self._entries: List[LogEntry] = []
@@ -40,4 +42,4 @@ class PipelineLogger:
         self._entries.clear()
 
     def __len__(self) -> int:
-        return len(self._entries)    
+        return len(self._entries)

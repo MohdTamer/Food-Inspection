@@ -1,16 +1,16 @@
 from pathlib import Path
 
-import pandas as pd
 from loguru import logger
+import pandas as pd
 
 from helpers.path_resolver import PathResolver
 from helpers.pipeline_logger import PipelineLogger
-from science_the_data.helpers.types import PipelineStage
 from science_the_data.cleaning.geo_features import (
-    normalize_text_fields,
     add_longitude_flag,
     cast_types_and_build_flags,
+    normalize_text_fields,
 )
+from science_the_data.helpers.types import PipelineStage
 
 
 def geo_blocking_pipeline(input_csv_name: str, output_stage: PipelineStage) -> str:
@@ -62,7 +62,9 @@ def geo_blocking_pipeline(input_csv_name: str, output_stage: PipelineStage) -> s
             f"({nulled_leakage:,} rows nulled), informative flags, drop Location"
         ),
     )
-    logger.info(f"Cast types, standardised Risk, nulled {nulled_leakage:,} leakage rows, built flags")
+    logger.info(
+        f"Cast types, standardised Risk, nulled {nulled_leakage:,} leakage rows, built flags"
+    )
 
     log_path = Path("logs/geo_blocking_log.csv")
     log_path.parent.mkdir(parents=True, exist_ok=True)

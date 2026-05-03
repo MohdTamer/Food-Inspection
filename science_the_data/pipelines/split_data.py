@@ -25,6 +25,7 @@ from loguru import logger
 
 from helpers.path_resolver import PathResolver
 from helpers.pipeline_logger import PipelineLogger
+from science_the_data.helpers.splits_io import save_splits
 from science_the_data.pipelines.types import PipelineStage
 from science_the_data.eda.eda_split import compute_eda_stats
 
@@ -129,7 +130,9 @@ def splitting_pipeline(
         figures_dir=figures_dir,
     )
 
-    train_csv_name, test_csv_name = _save_splits(df_train, df_test, output_stage)
+    train_csv_name, test_csv_name = "train.csv", "test.csv"
+
+    save_splits(df_train, train_csv_name, df_test, test_csv_name, output_stage)
 
     log_path = Path("logs/splitting.csv")
     log_path.parent.mkdir(parents=True, exist_ok=True)
@@ -143,42 +146,15 @@ def _assert_no_leakage(df_train: pd.DataFrame, df_test: pd.DataFrame) -> None:
     assert not shared_ids, (
         f"Leakage: {len(shared_ids)} Inspection ID(s) appear in both splits!"
     )
+
     assert df_train[DATE_COL].max() < df_test[DATE_COL].min(), (
         "Data leakage: train dates overlap with test dates! "
         f"train_max={df_train[DATE_COL].max().date()}, "
         f"test_min={df_test[DATE_COL].min().date()}"
     )
+
     logger.info(
         "Leakage checks passed — train max: {}  |  test min: {}",
         df_train[DATE_COL].max().date(),
         df_test[DATE_COL].min().date(),
     )
-
-
-def _save_splits(
-    df_train: pd.DataFrame,
-    df_test: pd.DataFrame,
-    stage: PipelineStage,
-) -> tuple[str, str]:
-    train_csv_name = "train.csv"
-    test_csv_name  = "test.csv"
-
-    for df_split, csv_name, parq_name in [
-        (df_train, train_csv_name, "train.parquet"),
-        (df_test,  test_csv_name,  "test.parquet"),
-    ]:
-        csv_path  = PathResolver.get_data_path_from_stage(csv_name,  stage)
-        parq_path = PathResolver.get_data_path_from_stage(parq_name, stage)
-        csv_path.parent.mkdir(parents=True, exist_ok=True)
-
-        df_split.to_csv(csv_path,   index=False)
-        df_split.to_parquet(parq_path, index=False)
-
-        logger.info(
-            "Saved {} → {} ({:.1f} MB csv)  +  {} ({:.1f} MB parquet)",
-            csv_name,
-            csv_path,   csv_path.stat().st_size  / 1e6,
-            parq_path,  parq_path.stat().st_size / 1e6,
-        )
-
-    return train_csv_name, test_csv_name

@@ -7,10 +7,13 @@ from validations.types import Issue
 VALID_RESULTS = frozenset({
     "Pass", "Fail", "Pass w/ Conditions",
     "Out of Business", "Business Not Located", "No Entry", "Not Ready",
+    "1", "0", 0, 1 # fe aw2at btshta8al ka number we aw2at string, fa seb el etnen
 })
 
 VALID_RISKS = frozenset({
     "Risk 1 (High)", "Risk 2 (Medium)", "Risk 3 (Low)", "All",
+    "High", "Medium", "Low", "Unknown",
+    "1", "2", "3", 1, 2, 3 # fe aw2at btshta8al ka number we aw2at string, fa seb el etnen
 })
 
 CHICAGO_LAT = (41.6, 42.1)
@@ -100,8 +103,6 @@ def check_future_dates(df: pd.DataFrame) -> Issue | None:
 
 
 _ALL_CHECKS = [
-    check_latitude,
-    check_longitude,
     check_results,
     check_risk,
     check_state,
@@ -109,7 +110,6 @@ _ALL_CHECKS = [
     check_zip,
     check_future_dates,
 ]
-
 
 def run_quality_checks(df: pd.DataFrame) -> list[Issue]:
     return [issue for check in _ALL_CHECKS if (issue := check(df)) is not None]

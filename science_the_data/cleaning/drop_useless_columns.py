@@ -8,6 +8,10 @@ COLS_TO_DROP = [
     'BL_LATITUDE', 'BL_LONGITUDE', 'BL_LOCATION',
     'BL_LEGAL_NAME', 'BL_DBA_NAME',
 
+    # Fully null columns from the dataset for some reason
+    'Historical Wards 2003-2015', 'Zip Codes', 
+    'Community Areas', 'Census Tracts', 'Wards',
+
     # Administrative IDs with no predictive value
     'BL_ID', 'BL_LICENSE_ID', 'ACCOUNT NUMBER', 'SITE NUMBER',
 
@@ -35,17 +39,4 @@ def drop_useless_columns(
     df: pd.DataFrame,
     cols_to_drop: list[str] = COLS_TO_DROP,
 ) -> pd.DataFrame:
-    present = [c for c in cols_to_drop if c in df.columns]
-    missing = [c for c in cols_to_drop if c not in df.columns]
-
-    if missing:
-        # Warn but do not raise — upstream joins may legitimately omit some cols
-        import warnings
-        warnings.warn(
-            f"drop_useless_columns: {len(missing)} requested column(s) not found "
-            f"and will be skipped: {missing}",
-            UserWarning,
-            stacklevel=2,
-        )
-
-    return df.drop(columns=present)
+    return df.drop(columns=COLS_TO_DROP)

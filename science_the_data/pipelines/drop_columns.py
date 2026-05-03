@@ -41,7 +41,7 @@ def drop_useless_columns_pipeline(input_csv_name: str, output_stage: PipelineSta
         df_dropped.shape[1],
     )
 
-    log_path = Path("logs/logs.csv")
+    log_path = Path("logs/drop_columns.csv")
     pipeline_logger.save(log_path)
     logger.info("Saved pipeline log to: {}", log_path)
 

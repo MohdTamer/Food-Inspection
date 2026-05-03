@@ -52,3 +52,8 @@ extend-select = ["I"]  # Add import sorting
 known-first-party = ["science_the_data"]
 force-sort-within-sections = true
 
+
+[dependency-groups]
+dev = [
+    "pytest-cov (>=7.1.0,<8.0.0)"
+]

@@ -1,17 +1,17 @@
 """
 pipelines/split_data.py
 -----------------------
-Temporal train / test split.
+Temporal train / val / test split.
 
 Responsibilities
 ----------------
 - Load data from a given stage
 - Drop un-dateable rows
-- Sort and split by date cutoff
-- Assert no temporal / ID leakage
+- Sort and split by date cutoff (test), then sub-split train into train/val
+- Assert no temporal / ID leakage across all three splits
 - Trigger EDA figure generation  (drawing only — no report writing)
-- Save both splits to the output stage as CSV + Parquet
-- Return (train_csv_name, test_csv_name, eda_dict)
+- Save all three splits to the output stage as CSV + Parquet
+- Return (train_csv_name, val_csv_name, test_csv_name, eda_dict)
 
 Reports are written downstream by ``validations_pipeline``.
 """
@@ -33,6 +33,7 @@ DATE_COL = "Inspection Date"
 ID_COL = "Inspection ID"
 
 TEST_FRACTION = 0.20
+VAL_FRACTION  = 0.20  # fraction of remaining train to use as validation
 
 _STAGE_FOLDER: dict[PipelineStage, str] = {
     PipelineStage.RAW:         "raw",
@@ -48,7 +49,8 @@ def splitting_pipeline(
     input_stage: PipelineStage,
     output_stage: PipelineStage = PipelineStage.PROCESSED,
     test_fraction: float = TEST_FRACTION,
-) -> tuple[str, str, dict]:
+    val_fraction: float = VAL_FRACTION,
+) -> tuple[str, str, str, dict]:
 
     input_path = PathResolver.get_data_path_from_stage(input_csv_name, input_stage)
     df = pd.read_csv(input_path, parse_dates=[DATE_COL])
@@ -99,26 +101,39 @@ def splitting_pipeline(
     )
 
     train_mask = df[DATE_COL] < cutoff_date
-    df_train   = df.loc[train_mask].copy()
+    df_train   = df.loc[train_mask].copy().reset_index(drop=True)
     df_test    = df.loc[~train_mask].copy()
 
-    for label, subset in [("train", df_train), ("test", df_test)]:
+    # Carve validation from the tail of train
+    val_cutoff_idx  = int(len(df_train) * (1 - val_fraction))
+    val_cutoff_date = df_train.loc[val_cutoff_idx, DATE_COL]
+    val_mask        = df_train[DATE_COL] >= val_cutoff_date
+    df_val   = df_train.loc[val_mask].copy()
+    df_train = df_train.loc[~val_mask].copy()
+
+    logger.info(
+        "Val cutoff date: {}  (index {}/{})",
+        val_cutoff_date.date(), val_cutoff_idx, len(df_train) + len(df_val), # type: ignore
+    )
+
+    for label, subset in [("train", df_train), ("val", df_val), ("test", df_test)]:
         pipeline_logger.log_step(
             step=f"Temporal split — {label}",
             rows_before=len(df),
             rows_after=len(subset),
             cols_before=df.shape[1],
             cols_after=subset.shape[1],
-            note=f"cutoff_date={cutoff_date.date()}", # type: ignore
+            note=f"test_cutoff={cutoff_date.date()}, val_cutoff={val_cutoff_date.date()}", # type: ignore
         )
 
     logger.info(
-        "Train: {:,} rows ({:.1f}%)  |  Test: {:,} rows ({:.1f}%)",
+        "Train: {:,} rows ({:.1f}%)  |  Val: {:,} rows ({:.1f}%)  |  Test: {:,} rows ({:.1f}%)",
         len(df_train), len(df_train) / len(df) * 100,
+        len(df_val),   len(df_val)   / len(df) * 100,
         len(df_test),  len(df_test)  / len(df) * 100,
     )
 
-    _assert_no_leakage(df_train, df_test)
+    _assert_no_leakage(df_train, df_val, df_test)
 
     figures_dir = PathResolver.FIGURES / _STAGE_FOLDER[output_stage]
     eda = compute_eda_stats(
@@ -129,42 +144,60 @@ def splitting_pipeline(
         figures_dir=figures_dir,
     )
 
-    train_csv_name, test_csv_name = _save_splits(df_train, df_test, output_stage)
+    train_csv_name, val_csv_name, test_csv_name = _save_splits(df_train, df_val, df_test, output_stage)
 
     log_path = Path("logs/splitting.csv")
     log_path.parent.mkdir(parents=True, exist_ok=True)
     pipeline_logger.save(log_path)
     logger.info("Saved pipeline log → {}", log_path)
 
-    return train_csv_name, test_csv_name, eda
+    return train_csv_name, val_csv_name, test_csv_name, eda
 
-def _assert_no_leakage(df_train: pd.DataFrame, df_test: pd.DataFrame) -> None:
-    shared_ids = set(df_train[ID_COL]) & set(df_test[ID_COL])
-    assert not shared_ids, (
-        f"Leakage: {len(shared_ids)} Inspection ID(s) appear in both splits!"
+def _assert_no_leakage(
+    df_train: pd.DataFrame,
+    df_val: pd.DataFrame,
+    df_test: pd.DataFrame,
+) -> None:
+    for a_name, a, b_name, b in [
+        ("train", df_train, "val",  df_val),
+        ("train", df_train, "test", df_test),
+        ("val",   df_val,   "test", df_test),
+    ]:
+        shared = set(a[ID_COL]) & set(b[ID_COL])
+        assert not shared, (
+            f"Leakage: {len(shared)} Inspection ID(s) appear in both {a_name} and {b_name}!"
+        )
+
+    assert df_train[DATE_COL].max() < df_val[DATE_COL].min(), (
+        f"Date overlap: train_max={df_train[DATE_COL].max().date()}, "
+        f"val_min={df_val[DATE_COL].min().date()}"
     )
-    assert df_train[DATE_COL].max() < df_test[DATE_COL].min(), (
-        "Data leakage: train dates overlap with test dates! "
-        f"train_max={df_train[DATE_COL].max().date()}, "
+    assert df_val[DATE_COL].max() < df_test[DATE_COL].min(), (
+        f"Date overlap: val_max={df_val[DATE_COL].max().date()}, "
         f"test_min={df_test[DATE_COL].min().date()}"
     )
     logger.info(
-        "Leakage checks passed — train max: {}  |  test min: {}",
+        "Leakage checks passed — train_max: {}  |  val_min: {}  |  val_max: {}  |  test_min: {}",
         df_train[DATE_COL].max().date(),
+        df_val[DATE_COL].min().date(),
+        df_val[DATE_COL].max().date(),
         df_test[DATE_COL].min().date(),
     )
 
 
 def _save_splits(
     df_train: pd.DataFrame,
+    df_val: pd.DataFrame,
     df_test: pd.DataFrame,
     stage: PipelineStage,
-) -> tuple[str, str]:
+) -> tuple[str, str, str]:
     train_csv_name = "train.csv"
+    val_csv_name   = "val.csv"
     test_csv_name  = "test.csv"
 
     for df_split, csv_name, parq_name in [
         (df_train, train_csv_name, "train.parquet"),
+        (df_val,   val_csv_name,   "val.parquet"),
         (df_test,  test_csv_name,  "test.parquet"),
     ]:
         csv_path  = PathResolver.get_data_path_from_stage(csv_name,  stage)
@@ -181,4 +214,4 @@ def _save_splits(
             parq_path,  parq_path.stat().st_size / 1e6,
         )
 
-    return train_csv_name, test_csv_name
+    return train_csv_name, val_csv_name, test_csv_name

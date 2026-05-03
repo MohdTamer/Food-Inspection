@@ -31,12 +31,13 @@ def main():
     # validations_pipeline(quarntined, STAGE)
     quarntined = "clean_final.csv"
 
-    train_csv, test_csv, eda = splitting_pipeline(
+    train_csv, val_csv, test_csv, eda = splitting_pipeline(
         input_csv_name=quarntined,
         input_stage=PipelineStage.CLEANED,
         output_stage=PipelineStage.PROCESSED,
     )
     validations_pipeline(train_csv, PipelineStage.PROCESSED, eda)
+    validations_pipeline(val_csv,   PipelineStage.PROCESSED, eda)
     validations_pipeline(test_csv,  PipelineStage.PROCESSED, eda)
 
 if __name__ == "__main__":

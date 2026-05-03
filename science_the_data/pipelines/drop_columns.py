@@ -4,7 +4,7 @@ import pandas as pd
 
 from helpers.path_resolver import PathResolver
 from helpers.pipeline_logger import PipelineLogger
-from science_the_data.pipelines.types import PipelineStage
+from science_the_data.helpers.types import PipelineStage
 from science_the_data.cleaning.drop_useless_columns import (
     drop_useless_columns,
     COLS_TO_DROP,

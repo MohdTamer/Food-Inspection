@@ -5,7 +5,7 @@ from loguru import logger
 
 from helpers.path_resolver import PathResolver
 from helpers.pipeline_logger import PipelineLogger
-from science_the_data.pipelines.types import PipelineStage
+from science_the_data.helpers.types import PipelineStage
 from science_the_data.cleaning.quarintine import quarantine_missing_results
 
 def quarantine_pipeline(input_csv_name: str, output_stage: PipelineStage) -> str:

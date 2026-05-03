@@ -1,5 +1,5 @@
 from pathlib import Path
-from science_the_data.pipelines.types import PipelineStage
+from science_the_data.helpers.types import PipelineStage
 
 class PathResolver:
     """

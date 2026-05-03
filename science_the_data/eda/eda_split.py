@@ -1,18 +1,3 @@
-"""
-eda/eda_split.py
----------------------------
-Computes EDA statistics and saves figures for the train/test split.
-
-This module's only responsibilities are:
-  1. Derive summary statistics from the three dataframes.
-  2. Save figures to ``figures_dir`` (absolute path supplied by caller).
-  3. Return an ``eda`` dict whose ``figures`` values are absolute ``Path``
-     objects — the caller decides the report location and resolves relative
-     paths at render time via ``render_eda(eda, report_dir)``.
-
-No report writing happens here.
-"""
-
 from __future__ import annotations
 
 from pathlib import Path
@@ -32,31 +17,10 @@ def compute_eda_stats(
     cutoff_date: pd.Timestamp,
     figures_dir: Path,
 ) -> dict:
-    """
-    Compute EDA statistics and save figures.
-
-    Parameters
-    ----------
-    df           : full dataset (post null-drop, pre-split)
-    df_train     : training split
-    df_test      : test split
-    cutoff_date  : temporal boundary
-    figures_dir  : absolute directory for figure output
-                   (``PathResolver.FIGURES / stage_folder``)
-
-    Returns
-    -------
-    dict with keys:
-        split_summary, date_range, cutoff_date, target_dist,
-        class_labels, figures
-
-    ``figures`` maps figure_key -> absolute Path.
-    """
     figures_dir.mkdir(parents=True, exist_ok=True)
 
     eda: dict = {}
 
-    # ── Split summary ──────────────────────────────────────────────────────
     eda["split_summary"] = [
         {
             "split":      "Train",
@@ -81,7 +45,6 @@ def compute_eda_stats(
         },
     ]
 
-    # ── Date range ─────────────────────────────────────────────────────────
     eda["date_range"] = {
         "min":        str(df[DATE_COL].min().date()),
         "max":        str(df[DATE_COL].max().date()),
@@ -89,7 +52,6 @@ def compute_eda_stats(
     }
     eda["cutoff_date"] = str(cutoff_date.date())
 
-    # ── Target distribution ────────────────────────────────────────────────
     class_labels = sorted(df[TARGET_COL].dropna().unique().tolist())
     eda["class_labels"] = class_labels
 
@@ -105,7 +67,6 @@ def compute_eda_stats(
             for cls in class_labels
         }
 
-    # ── Figures  (absolute paths stored; relative resolved at render time) ─
     eda["figures"] = {
         "target_distribution":   _fig_target_distribution(df, df_train, df_test, figures_dir),
         "inspections_over_time": _fig_inspections_over_time(df_train, df_test, figures_dir),
@@ -113,16 +74,12 @@ def compute_eda_stats(
 
     return eda
 
-
-# ── Figure generators ──────────────────────────────────────────────────────
-
 def _fig_target_distribution(
     df: pd.DataFrame,
     df_train: pd.DataFrame,
     df_test: pd.DataFrame,
     figures_dir: Path,
 ) -> Path:
-    """Bar chart: target distribution across Train / Test / Overall."""
     bar_colors = ["#2ecc71", "#e74c3c", "#f39c12", "#3498db", "#9b59b6"]
 
     fig, axes = plt.subplots(1, 3, figsize=(14, 4), sharey=True)
@@ -132,7 +89,7 @@ def _fig_target_distribution(
         [(df_train, "Train"), (df_test, "Test"), (df, "Overall")],
     ):
         pcts = subset[TARGET_COL].value_counts(normalize=True).mul(100).sort_index()
-        pcts.plot.bar(ax=ax, color=bar_colors[: len(pcts)], edgecolor="white")
+        pcts.plot.bar(ax=ax, color=bar_colors[: len(pcts)], edgecolor="white") # type: ignore
         ax.set_title(title, fontweight="bold")
         ax.set_ylabel("Percentage (%)" if ax is axes[0] else "")
         ax.set_xlabel("")
@@ -162,7 +119,6 @@ def _fig_inspections_over_time(
     df_test: pd.DataFrame,
     figures_dir: Path,
 ) -> Path:
-    """Area + line chart: monthly inspection counts shaded by split."""
     train_monthly = df_train.set_index(DATE_COL).resample("ME").size().rename("Train")
     test_monthly  = df_test.set_index(DATE_COL).resample("ME").size().rename("Test")
 

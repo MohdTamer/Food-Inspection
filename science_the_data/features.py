@@ -4,7 +4,7 @@ from loguru import logger
 from tqdm import tqdm
 import typer
 
-from science_the_data.config.config import PROCESSED_DATA_DIR
+from science_the_data.config.config import PROJ_ROOT
 
 app = typer.Typer()
 
@@ -12,8 +12,8 @@ app = typer.Typer()
 @app.command()
 def main(
     # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----
-    input_path: Path = PROCESSED_DATA_DIR / "dataset.csv",
-    output_path: Path = PROCESSED_DATA_DIR / "features.csv",
+    input_path: Path = PROJ_ROOT / "dataset.csv",
+    output_path: Path = PROJ_ROOT / "features.csv",
     # -----------------------------------------
 ):
     # ---- REPLACE THIS WITH YOUR OWN CODE ----

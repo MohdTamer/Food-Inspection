@@ -1,21 +1,3 @@
-"""
-pipelines/split_data.py
------------------------
-Temporal train / val / test split.
-
-Responsibilities
-----------------
-- Load data from a given stage
-- Drop un-dateable rows
-- Sort and split by date cutoff (test), then sub-split train into train/val
-- Assert no temporal / ID leakage across all three splits
-- Trigger EDA figure generation  (drawing only — no report writing)
-- Save all three splits to the output stage as CSV + Parquet
-- Return (train_csv_name, val_csv_name, test_csv_name, eda_dict)
-
-Reports are written downstream by ``validations_pipeline``.
-"""
-
 from __future__ import annotations
 
 from pathlib import Path
@@ -25,7 +7,8 @@ from loguru import logger
 
 from helpers.path_resolver import PathResolver
 from helpers.pipeline_logger import PipelineLogger
-from science_the_data.pipelines.types import PipelineStage
+from science_the_data.helpers.types import (SplitData, PipelineStage)
+from science_the_data.helpers.splits_io import save_splits
 from science_the_data.eda.eda_split import compute_eda_stats
 
 TARGET_COL = "Results"
@@ -33,7 +16,7 @@ DATE_COL = "Inspection Date"
 ID_COL = "Inspection ID"
 
 TEST_FRACTION = 0.20
-VAL_FRACTION  = 0.20  # fraction of remaining train to use as validation
+VAL_FRACTION  = 0.20
 
 _STAGE_FOLDER: dict[PipelineStage, str] = {
     PipelineStage.RAW:         "raw",
@@ -144,7 +127,14 @@ def splitting_pipeline(
         figures_dir=figures_dir,
     )
 
-    train_csv_name, val_csv_name, test_csv_name = _save_splits(df_train, df_val, df_test, output_stage)
+    train_csv_name, val_csv_name, test_csv_name = "split_train.csv", "split_validation.csv", "split_test.csv"
+
+    save_splits(
+        train=SplitData(df=df_train, file_name=train_csv_name),
+        val=SplitData(df=df_val,     file_name=val_csv_name),
+        test=SplitData(df=df_test,   file_name=test_csv_name),
+        stage=output_stage,
+    )
 
     log_path = Path("logs/splitting.csv")
     log_path.parent.mkdir(parents=True, exist_ok=True)
@@ -172,10 +162,16 @@ def _assert_no_leakage(
         f"Date overlap: train_max={df_train[DATE_COL].max().date()}, "
         f"val_min={df_val[DATE_COL].min().date()}"
     )
+
+    assert df_train[DATE_COL].max() < df_test[DATE_COL].min(), (
+        "Data leakage: train dates overlap with test dates! "
+        f"train_max={df_train[DATE_COL].max().date()}, "
+    )
     assert df_val[DATE_COL].max() < df_test[DATE_COL].min(), (
         f"Date overlap: val_max={df_val[DATE_COL].max().date()}, "
         f"test_min={df_test[DATE_COL].min().date()}"
     )
+
     logger.info(
         "Leakage checks passed — train_max: {}  |  val_min: {}  |  val_max: {}  |  test_min: {}",
         df_train[DATE_COL].max().date(),
@@ -183,35 +179,3 @@ def _assert_no_leakage(
         df_val[DATE_COL].max().date(),
         df_test[DATE_COL].min().date(),
     )
-
-
-def _save_splits(
-    df_train: pd.DataFrame,
-    df_val: pd.DataFrame,
-    df_test: pd.DataFrame,
-    stage: PipelineStage,
-) -> tuple[str, str, str]:
-    train_csv_name = "train.csv"
-    val_csv_name   = "val.csv"
-    test_csv_name  = "test.csv"
-
-    for df_split, csv_name, parq_name in [
-        (df_train, train_csv_name, "train.parquet"),
-        (df_val,   val_csv_name,   "val.parquet"),
-        (df_test,  test_csv_name,  "test.parquet"),
-    ]:
-        csv_path  = PathResolver.get_data_path_from_stage(csv_name,  stage)
-        parq_path = PathResolver.get_data_path_from_stage(parq_name, stage)
-        csv_path.parent.mkdir(parents=True, exist_ok=True)
-
-        df_split.to_csv(csv_path,   index=False)
-        df_split.to_parquet(parq_path, index=False)
-
-        logger.info(
-            "Saved {} → {} ({:.1f} MB csv)  +  {} ({:.1f} MB parquet)",
-            csv_name,
-            csv_path,   csv_path.stat().st_size  / 1e6,
-            parq_path,  parq_path.stat().st_size / 1e6,
-        )
-
-    return train_csv_name, val_csv_name, test_csv_name

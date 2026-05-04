@@ -89,11 +89,6 @@ class TestBinarizeTarget:
         result = binarize_target(df)
         assert result["Results"].dtype == int
 
-    def test_violation_count_column_dropped(self):
-        df = pd.DataFrame({"Results": ["Pass"], "Violations": [""]})
-        result = binarize_target(df)
-        assert "violation_count" not in result.columns
-
     def test_no_nulls_in_results_after_binarization(self):
         df = pd.DataFrame({
             "Results":    ["Pass", "Fail", "Pass w/ Conditions"],

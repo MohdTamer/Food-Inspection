@@ -6,6 +6,7 @@ reports/*.md
 reports/figures/
 reports/*.png
 eda_cache/
+models/
 
 # Mac OS-specific storage files
 .DS_Store

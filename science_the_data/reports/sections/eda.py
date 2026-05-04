@@ -1,26 +1,3 @@
-"""
-reports/sections/eda.py
-------------------------
-Renders the EDA section of a Markdown report.
-
-``render_eda(eda, report_dir)`` accepts the dict produced by
-``compute_eda_stats()`` and the directory where the report will be written.
-It resolves each absolute figure path to a relative POSIX path so Markdown
-renderers can find the images regardless of where the project root sits.
-
-Expected *eda* keys (all optional — missing keys are silently skipped)
------------------------------------------------------------------------
-split_summary   : list[dict]  keys: split, rows, pct, date_start, date_end
-date_range      : dict        keys: min, max, total_days
-cutoff_date     : str
-target_dist     : dict[split_label -> dict[class_label -> {count, pct}]]
-class_labels    : list[str]
-figures         : dict[figure_key -> absolute Path]
-                  Recognised keys:
-                    "target_distribution"   — bar chart per split
-                    "inspections_over_time" — monthly volume line chart
-"""
-
 from __future__ import annotations
 
 import os
@@ -33,21 +10,11 @@ _FIGURE_CAPTIONS: dict[str, str] = {
 
 
 def render_eda(eda: dict, report_dir: Path) -> list[str]:
-    """
-    Return Markdown lines for the EDA section.
-
-    Parameters
-    ----------
-    eda         : dict from ``compute_eda_stats()``
-    report_dir  : directory the report will be written into — used to
-                  compute relative paths to figures
-    """
     lines: list[str] = []
     a = lines.append
 
     a("## 3. Exploratory Split Analysis\n")
 
-    # ── Split summary ──────────────────────────────────────────────────────
     if "split_summary" in eda:
         a("### Split Summary\n")
         a("| Split | Rows | % of Total | Date Start | Date End |")
@@ -62,7 +29,6 @@ def render_eda(eda: dict, report_dir: Path) -> list[str]:
             )
         a("")
 
-    # ── Date range ─────────────────────────────────────────────────────────
     if "date_range" in eda:
         dr = eda["date_range"]
         a("### Date Range\n")
@@ -75,7 +41,6 @@ def render_eda(eda: dict, report_dir: Path) -> list[str]:
             a(f"| Temporal split cutoff | **{eda['cutoff_date']}** |")
         a("")
 
-    # ── Target distribution table ──────────────────────────────────────────
     if "target_dist" in eda:
         a("### Target (`Results`) Distribution by Split\n")
 
@@ -101,7 +66,6 @@ def render_eda(eda: dict, report_dir: Path) -> list[str]:
             "concept drift across the time boundary.\n"
         )
 
-    # ── Figures ────────────────────────────────────────────────────────────
     figures: dict[str, Path] = eda.get("figures", {})
 
     if figures:
@@ -115,7 +79,6 @@ def render_eda(eda: dict, report_dir: Path) -> list[str]:
             a(f"![{alt}]({rel})\n")
             a(f"*{caption}*\n")
 
-        # Any figure not in the known list (forward-compat)
         for key, abs_path in figures.items():
             if key in _FIGURE_CAPTIONS:
                 continue

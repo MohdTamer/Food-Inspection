@@ -35,22 +35,25 @@ def run_modelling(splits: DataSplits) -> None:
 
 @app.command()
 def main() -> None:
-    raw_csv_name = "merged_inspections_licenses_inner.csv"
+    # raw_csv_name = "merged_inspections_licenses_inner.csv"
 
-    clean_csv = run_cleaning(raw_csv_name)
-    clean_csv = "clean_final.csv"
+    # clean_csv = run_cleaning(raw_csv_name)
+    # clean_csv = "clean_final.csv"
 
-    splits, eda = run_splitting(clean_csv)
-    # splits, eda = (
-    #     DataSplits(
-    #         "split_train.csv",
-    #         "split_validation.csv",
-    #         "split_test.csv",
-    #     ),
-    #     None,
-    # )
+    # splits, eda = run_splitting(clean_csv)
+    splits, eda = (
+        DataSplits(
+            "split_train.csv",
+            "split_validation.csv",
+            "split_test.csv",
+        ),
+        None,
+    )
 
     splits = run_transformations(splits, eda)
+    splits = DataSplits(
+        "encoded_features_train.csv", "encoded_features_val.csv", "encoded_features_test.csv"
+    )
     eda_pipeline(splits)
     run_modelling(splits)
 

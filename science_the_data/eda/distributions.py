@@ -12,8 +12,16 @@ def class_balance(df: pd.DataFrame, target: str = "Results") -> dict:
     }
 
 
+def cardinality_summary(df: pd.DataFrame) -> pd.DataFrame:
+    return pd.DataFrame({"unique_values": df.nunique(), "dtype": df.dtypes}).sort_values(
+        "unique_values", ascending=False
+    )
+
+
 def numeric_summary(df: pd.DataFrame) -> pd.DataFrame:
-    return df.select_dtypes(include="number").describe().T
+    stats = df.select_dtypes(include="number").describe().T
+    stats["skew"] = df.select_dtypes(include="number").skew()
+    return stats
 
 
 def top_facility_types(df: pd.DataFrame, n: int = 10) -> pd.Series:
@@ -36,3 +44,19 @@ def inspection_type_distribution(df: pd.DataFrame) -> pd.Series:
     elif "inspection_type_encoded" in df.columns:
         return df["inspection_type_encoded"].value_counts()
     return pd.Series(dtype=int)
+
+
+def violation_summary(df: pd.DataFrame) -> dict:
+    if "violation_count" not in df.columns:
+        if "Violations" in df.columns:
+            df["violation_count"] = df["Violations"].str.count(r"\|") + 1
+            df["violation_count"] = df["violation_count"].fillna(0)
+        else:
+            return {}
+
+    return {
+        "mean_violations": df["violation_count"].mean(),
+        "max_violations": df["violation_count"].max(),
+        "distribution": df["violation_count"].value_counts().sort_index().to_dict(),
+        "correlation_with_result": df[["violation_count", "Results"]].corr().iloc[0, 1],
+    }

@@ -37,9 +37,9 @@ def run_validations(
 ) -> None:
     logger.info("Running validations on {}", input_path)
 
-    _cols        = pd.read_csv(input_path, nrows=0).columns.tolist()
+    _cols = pd.read_csv(input_path, nrows=0).columns.tolist()
     _parse_dates = ["Inspection Date"] if "Inspection Date" in _cols else []
-    df           = pd.read_csv(input_path, parse_dates=_parse_dates)
+    df = pd.read_csv(input_path, parse_dates=_parse_dates)
 
     logger.info("Loaded {:,} rows × {} columns.", len(df), df.shape[1])
 

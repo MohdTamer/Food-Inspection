@@ -32,7 +32,7 @@ def pruning_pipeline(
     cols_before = train.shape[1]
 
     train, dropped_train = prune_columns(train)
-    val,  _ = prune_columns(val)
+    val, _ = prune_columns(val)
     test, _ = prune_columns(test)
 
     cols_after = train.shape[1]
@@ -48,12 +48,12 @@ def pruning_pipeline(
         )
 
     train_csv_name = "pruned_train.csv"
-    val_csv_name   = "pruned_val.csv"
-    test_csv_name  = "pruned_test.csv"
+    val_csv_name = "pruned_val.csv"
+    test_csv_name = "pruned_test.csv"
 
     train_csv_name, val_csv_name, test_csv_name = save_splits(
         train=SplitData(df=train, file_name=train_csv_name),
-        val=SplitData(df=val,   file_name=val_csv_name),
+        val=SplitData(df=val, file_name=val_csv_name),
         test=SplitData(df=test, file_name=test_csv_name),
         stage=output_stage,
     )

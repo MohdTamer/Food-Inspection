@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-import pandas as pd
 from loguru import logger
+import pandas as pd
 
 APP_TYPE_MAP: dict[str, int] = {
-    "ISSUE":  0,
-    "RENEW":  1,
-    "C_LOC":  2,
+    "ISSUE": 0,
+    "RENEW": 1,
+    "C_LOC": 2,
     "C_EXPA": 2,
     "C_CAPA": 2,
-    "C_SBA":  2,
+    "C_SBA": 2,
 }
 
 NO_LONGER_NEEDED = [
@@ -67,14 +67,16 @@ def encode_categorical_features(
     train, val, test with encoded columns appended and raw columns removed.
     """
     train = train.copy()
-    val   = val.copy()
-    test  = test.copy()
+    val = val.copy()
+    test = test.copy()
 
     global_mean = train["Results"].mean()
 
     insp_fail_rate = train.groupby("Inspection Type")["Results"].mean()
     for df in (train, val, test):
-        df["inspection_type_encoded"] = df["Inspection Type"].map(insp_fail_rate).fillna(global_mean)
+        df["inspection_type_encoded"] = (
+            df["Inspection Type"].map(insp_fail_rate).fillna(global_mean)
+        )
 
     logger.info(
         "inspection_type_encoded — nulls: train={}, val={}, test={}",
@@ -85,7 +87,9 @@ def encode_categorical_features(
 
     facility_fail_rate = train.groupby("Facility Type")["Results"].mean()
     for df in (train, val, test):
-        df["facility_type_encoded"] = df["Facility Type"].map(facility_fail_rate).fillna(global_mean)
+        df["facility_type_encoded"] = (
+            df["Facility Type"].map(facility_fail_rate).fillna(global_mean)
+        )
 
     logger.info(
         "facility_type_encoded — nulls: train={}, val={}, test={}",
@@ -101,7 +105,7 @@ def encode_categorical_features(
         df["application_type_encoded"] = df["APPLICATION TYPE"].map(APP_TYPE_MAP).fillna(1)
 
     cols_to_drop = [c for c in NO_LONGER_NEEDED if c in train.columns]
-    skipped      = [c for c in NO_LONGER_NEEDED if c not in train.columns]
+    skipped = [c for c in NO_LONGER_NEEDED if c not in train.columns]
 
     if skipped:
         logger.warning(
@@ -111,12 +115,11 @@ def encode_categorical_features(
         )
 
     train = train.drop(columns=cols_to_drop)
-    val   = val.drop(columns=cols_to_drop)
-    test  = test.drop(columns=cols_to_drop)
+    val = val.drop(columns=cols_to_drop)
+    test = test.drop(columns=cols_to_drop)
 
     logger.info(
-        "Categorical encodings complete — dropped {} raw column(s) | "
-        "remaining columns: {}",
+        "Categorical encodings complete — dropped {} raw column(s) | remaining columns: {}",
         len(cols_to_drop),
         train.columns.tolist(),
     )

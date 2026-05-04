@@ -16,9 +16,7 @@ def compute_basic_stats(df: pd.DataFrame) -> StatsReport:
     }
 
     _id_dupes = (
-        int(df.duplicated(subset=["Inspection ID"]).sum())
-        if "Inspection ID" in df.columns
-        else 0
+        int(df.duplicated(subset=["Inspection ID"]).sum()) if "Inspection ID" in df.columns else 0
     )
 
     return {

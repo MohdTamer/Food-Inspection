@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import pandas as pd
 from loguru import logger
+import pandas as pd
 
 # High-cardinality columns that add noise without predictive value
 NOISE_COLS = ["DBA Name", "AKA Name", "Address"]

@@ -8,7 +8,9 @@ from helpers.pipeline_logger import PipelineLogger
 from helpers.splits_io import load_splits, save_splits
 from science_the_data.helpers.types import PipelineStage, SplitData
 from science_the_data.transformations.categorical_encodings import encode_categorical_features
-from science_the_data.transformations.inspection_history_encoding import add_inspection_history_features
+from science_the_data.transformations.inspection_history_encoding import (
+    add_inspection_history_features,
+)
 
 
 def encode_features_pipeline(
@@ -90,12 +92,12 @@ def encode_features_pipeline(
         )
 
     train_csv_name = "encoded_features_train.csv"
-    val_csv_name   = "encoded_features_val.csv"
-    test_csv_name  = "encoded_features_test.csv"
+    val_csv_name = "encoded_features_val.csv"
+    test_csv_name = "encoded_features_test.csv"
 
     train_csv_name, val_csv_name, test_csv_name = save_splits(
         train=SplitData(df=train, file_name=train_csv_name),
-        val=SplitData(df=val,   file_name=val_csv_name),
+        val=SplitData(df=val, file_name=val_csv_name),
         test=SplitData(df=test, file_name=test_csv_name),
         stage=output_stage,
     )

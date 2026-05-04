@@ -11,6 +11,7 @@ from science_the_data.helpers.types import PipelineStage
 from science_the_data.pipelines.drop_nulls import remove_nulls_dups_pipeline
 from science_the_data.pipelines.encoding_features import encode_features_pipeline
 from science_the_data.pipelines.pruning import pruning_pipeline
+from pipelines.train_models import train_models_pipeline
 
 app = typer.Typer()
 
@@ -67,6 +68,7 @@ def main():
     )
     apply_validation_pipeline_to_list((train_csv, val_csv, test_csv), STAGE)
 
+    train_models_pipeline(train_csv, val_csv, test_csv, PipelineStage.PROCESSED)
 
 def apply_validation_pipeline_to_list(csv_names: tuple, stage: PipelineStage, eda=None) -> None:
     for item in csv_names:

@@ -9,6 +9,8 @@ from pipelines.split_data import splitting_pipeline
 from pipelines.validations import validations_pipeline
 from science_the_data.helpers.types import PipelineStage
 from science_the_data.pipelines.drop_nulls import remove_nulls_dups_pipeline
+from science_the_data.pipelines.encoding_features import encode_features_pipeline
+from science_the_data.pipelines.pruning import pruning_pipeline
 
 app = typer.Typer()
 
@@ -51,6 +53,16 @@ def main():
     apply_validation_pipeline_to_list((train_csv, val_csv, test_csv), STAGE)
 
     train_csv, val_csv, test_csv = feature_engineering_pipeline(
+        train_csv, val_csv, test_csv, PipelineStage.PROCESSED
+    )
+    apply_validation_pipeline_to_list((train_csv, val_csv, test_csv), STAGE)
+
+    train_csv, val_csv, test_csv = pruning_pipeline(
+        train_csv, val_csv, test_csv, PipelineStage.PROCESSED
+    )
+    apply_validation_pipeline_to_list((train_csv, val_csv, test_csv), STAGE)
+
+    train_csv, val_csv, test_csv = encode_features_pipeline(
         train_csv, val_csv, test_csv, PipelineStage.PROCESSED
     )
     apply_validation_pipeline_to_list((train_csv, val_csv, test_csv), STAGE)

@@ -50,12 +50,9 @@ def main() -> None:
         None,
     )
 
-
     splits = run_transformations(splits, eda)
     splits = DataSplits(
-        "encoded_features_train.csv",
-        "encoded_features_val.csv",
-        "encoded_features_test.csv"
+        "encoded_features_train.csv", "encoded_features_val.csv", "encoded_features_test.csv"
     )
     eda_pipeline(splits)
     run_modelling(splits)

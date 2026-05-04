@@ -9,7 +9,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from models.evaluation import evaluate
+from science_the_data.models.evaluation import evaluate
 
 
 def train(
@@ -36,8 +36,8 @@ def train(
 
     pipeline.fit(X_train, y_train)
 
-    train_metrics = evaluate(pipeline, X_train, y_train, "Logistic Regression — Train")
-    val_metrics = evaluate(pipeline, X_val, y_val, "Logistic Regression — Val")
+    _, _, train_metrics = evaluate(pipeline, X_train, y_train, "Logistic Regression — Train")
+    _, _, val_metrics = evaluate(pipeline, X_val, y_val, "Logistic Regression — Val")
 
     models_dir.mkdir(parents=True, exist_ok=True)
     joblib.dump(pipeline, models_dir / "logistic_regression.pkl")

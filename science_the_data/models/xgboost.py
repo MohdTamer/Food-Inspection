@@ -7,7 +7,7 @@ from loguru import logger
 import pandas as pd
 from xgboost import XGBClassifier
 
-from models.evaluation import evaluate
+from science_the_data.models.evaluation import evaluate
 
 
 def train(
@@ -39,8 +39,8 @@ def train(
     )
     logger.info("XGBoost best iteration: {}", model.best_iteration)
 
-    train_metrics = evaluate(model, X_train, y_train, "XGBoost — Train")
-    val_metrics = evaluate(model, X_val, y_val, "XGBoost — Val")
+    _, _, train_metrics = evaluate(model, X_train, y_train, "XGBoost — Train")
+    _, _, val_metrics = evaluate(model, X_val, y_val, "XGBoost — Val")
 
     models_dir.mkdir(parents=True, exist_ok=True)
     joblib.dump(model, models_dir / "xgboost.pkl")

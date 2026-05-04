@@ -5,7 +5,7 @@ from dataclasses import dataclass, asdict, field
 from pathlib import Path
 from datetime import datetime
 from typing import List, Optional
-from helpers.log_dto import LogEntry
+from science_the_data.helpers.types import LogEntry
     
 class PipelineLogger:
     def __init__(self) -> None:

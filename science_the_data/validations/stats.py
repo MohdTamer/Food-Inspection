@@ -15,11 +15,17 @@ def compute_basic_stats(df: pd.DataFrame) -> StatsReport:
         if missing_raw[col] > 0
     }
 
+    _id_dupes = (
+        int(df.duplicated(subset=["Inspection ID"]).sum())
+        if "Inspection ID" in df.columns
+        else 0
+    )
+
     return {
         "n_rows": int(df.shape[0]),
         "n_cols": int(df.shape[1]),
         "dtypes": {col: str(dtype) for col, dtype in df.dtypes.items()},
         "missing": missing,
         "full_duplicates": int(df.duplicated().sum()),
-        "id_duplicates": int(df.duplicated(subset=["Inspection ID"]).sum()),
+        "id_duplicates": _id_dupes,
     }

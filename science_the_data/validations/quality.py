@@ -53,6 +53,9 @@ def _issue(field: str, message: str, count: int, sample: list | None = None) -> 
 
 
 def check_latitude(df: pd.DataFrame) -> Issue | None:
+    if "Latitude" not in df.columns:
+        return None
+    
     lo, hi = CHICAGO_LAT
     bad = df["Latitude"].dropna()
     bad = bad[(bad < lo) | (bad > hi)]
@@ -63,6 +66,9 @@ def check_latitude(df: pd.DataFrame) -> Issue | None:
 
 
 def check_longitude(df: pd.DataFrame) -> Issue | None:
+    if "Longitude" not in df.columns:
+        return None
+    
     lo, hi = CHICAGO_LON
     bad = df["Longitude"].dropna()
     bad = bad[(bad < lo) | (bad > hi)]
@@ -81,6 +87,7 @@ def check_results(df: pd.DataFrame) -> Issue | None:
 
 
 def check_risk(df: pd.DataFrame) -> Issue | None:
+    
     bad = df[~df["Risk"].isin(VALID_RISKS)]["Risk"].dropna().unique().tolist()
 
     if not bad:
@@ -113,6 +120,9 @@ def check_state(df: pd.DataFrame) -> Issue | None:
 
 
 def check_zip(df: pd.DataFrame) -> Issue | None:
+    if "Zip" not in df.columns:
+        return None
+    
     bad = df[~df["Zip"].astype(str).str.match(r"^\d{5}$")]["Zip"].dropna().unique().tolist()
 
     if not bad:
@@ -123,6 +133,9 @@ def check_zip(df: pd.DataFrame) -> Issue | None:
 
 
 def check_future_dates(df: pd.DataFrame) -> Issue | None:
+    if "Inspection Date" not in df.columns:
+        return None
+    
     bad = df[df["Inspection Date"] > pd.Timestamp.today()]
 
     if bad.empty:

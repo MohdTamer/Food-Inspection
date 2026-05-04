@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import pickle
 from pathlib import Path
+import pickle
 
-import pandas as pd
 from loguru import logger
+import pandas as pd
 
 from science_the_data.eda import correlations, distributions, geo, missing, temporal
 from science_the_data.helpers.path_resolver import PathResolver
@@ -64,21 +64,23 @@ def eda_pipeline(splits: DataSplits) -> None:
     # --- Correlations ---
     logger.info("Computing correlations ...")
     payload["numeric_correlation"] = correlations.numeric_correlation(df)
-    payload["target_correlation"]  = correlations.target_correlation(df, TARGET)
+    payload["target_correlation"] = correlations.target_correlation(df, TARGET)
     logger.info(
         "Top correlate with target: {} ({:.3f})",
-        payload["target_correlation"].index[0] if not payload["target_correlation"].empty else "N/A",
-        payload["target_correlation"].iloc[0]  if not payload["target_correlation"].empty else 0,
+        payload["target_correlation"].index[0]
+        if not payload["target_correlation"].empty
+        else "N/A",
+        payload["target_correlation"].iloc[0] if not payload["target_correlation"].empty else 0,
     )
 
     # --- Temporal ---
     logger.info("Computing temporal trends ...")
     payload["inspections_over_time"] = temporal.inspections_over_time(df)
-    payload["fail_rate_over_time"]   = temporal.fail_rate_over_time(df)
+    payload["fail_rate_over_time"] = temporal.fail_rate_over_time(df)
 
     # --- Geo ---
     logger.info("Computing geo distributions ...")
-    payload["geo_sample"]             = geo.geo_sample(df)
+    payload["geo_sample"] = geo.geo_sample(df)
     payload["fail_rate_by_community"] = geo.fail_rate_by_community(df)
 
     # --- Persist for dashboard ---

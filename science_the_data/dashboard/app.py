@@ -2,10 +2,11 @@
 EDA Dashboard
 Run with:  streamlit run science_the_data/dashboard/app.py
 """
+
 from __future__ import annotations
 
-import pickle
 from pathlib import Path
+import pickle
 
 import pandas as pd
 import plotly.express as px
@@ -28,8 +29,7 @@ st.set_page_config(
 def load_payload() -> dict:
     if not CACHE_PATH.exists():
         st.error(
-            f"EDA cache not found at `{CACHE_PATH}`. "
-            "Run the EDA pipeline first (`make run`)."
+            f"EDA cache not found at `{CACHE_PATH}`. Run the EDA pipeline first (`make run`)."
         )
         st.stop()
     with open(CACHE_PATH, "rb") as f:
@@ -93,7 +93,8 @@ elif page == "Distributions":
         st.subheader("Risk Level")
         risk: pd.Series = payload["risk_distribution"]
         fig = px.bar(
-            x=[str(r) for r in risk.index], y=risk.values,
+            x=[str(r) for r in risk.index],
+            y=risk.values,
             labels={"x": "Risk", "y": "Count"},
             color_discrete_sequence=["#e67e22"],
         )
@@ -103,7 +104,8 @@ elif page == "Distributions":
         st.subheader("Inspection Type")
         it: pd.Series = payload["inspection_type_distribution"]
         fig = px.bar(
-            x=it.index, y=it.values,
+            x=it.index,
+            y=it.values,
             labels={"x": "Inspection Type", "y": "Count"},
             color_discrete_sequence=["#3498db"],
         )
@@ -122,7 +124,8 @@ elif page == "Missingness":
     else:
         fig = px.bar(
             miss.reset_index(),
-            x="index", y="missing_pct",
+            x="index",
+            y="missing_pct",
             labels={"index": "Column", "missing_pct": "Missing (%)"},
             color="missing_pct",
             color_continuous_scale="Reds",
@@ -141,7 +144,8 @@ elif page == "Correlations":
     tc: pd.Series = payload["target_correlation"]
     if not tc.empty:
         fig = px.bar(
-            x=tc.index, y=tc.values,
+            x=tc.index,
+            y=tc.values,
             labels={"x": "Feature", "y": "Correlation"},
             color=tc.values,
             color_continuous_scale="RdBu",
@@ -170,7 +174,8 @@ elif page == "Temporal":
     if not iot.empty:
         st.subheader("Inspections Over Time")
         fig = px.line(
-            x=iot.index.astype(str), y=iot.values,
+            x=iot.index.astype(str),
+            y=iot.values,
             labels={"x": "Period", "y": "Inspections"},
         )
         st.plotly_chart(fig, use_container_width=True)
@@ -179,12 +184,17 @@ elif page == "Temporal":
     if not frot.empty:
         st.subheader("Fail Rate Over Time")
         fig = px.line(
-            x=frot.index.astype(str), y=frot.values,
+            x=frot.index.astype(str),
+            y=frot.values,
             labels={"x": "Period", "y": "Fail Rate"},
             color_discrete_sequence=["#e74c3c"],
         )
-        fig.add_hline(y=frot.mean(), line_dash="dash", line_color="grey",
-                      annotation_text=f"Mean {frot.mean():.2%}")
+        fig.add_hline(
+            y=frot.mean(),
+            line_dash="dash",
+            line_color="grey",
+            annotation_text=f"Mean {frot.mean():.2%}",
+        )
         st.plotly_chart(fig, use_container_width=True)
 
 # ---------------------------------------------------------------------------
@@ -205,7 +215,8 @@ elif page == "Geo":
         if not community.empty:
             fig = px.bar(
                 community.head(20),
-                x="COMMUNITY AREA NAME", y="fail_rate",
+                x="COMMUNITY AREA NAME",
+                y="fail_rate",
                 color="fail_rate",
                 color_continuous_scale="Reds",
                 labels={"fail_rate": "Fail Rate", "COMMUNITY AREA NAME": "Community"},

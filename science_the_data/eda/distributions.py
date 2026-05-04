@@ -8,7 +8,7 @@ def class_balance(df: pd.DataFrame, target: str = "Results") -> dict:
     total = len(df)
     return {
         "counts": counts.to_dict(),
-        "pct":    (counts / total * 100).round(2).to_dict(),
+        "pct": (counts / total * 100).round(2).to_dict(),
     }
 
 

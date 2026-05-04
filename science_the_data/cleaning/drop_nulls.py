@@ -14,7 +14,7 @@ def drop_exact_duplicates(df: pd.DataFrame) -> pd.DataFrame:
 
 def drop_inspection_id_duplication(df: pd.DataFrame) -> pd.DataFrame:
     if "Inspection Date" in df.columns:
-        sort_dates = pd.to_datetime(df["Inspection Date"], errors="coerce")
+        sort_dates = pd.to_datetime(df["Inspection Date"], errors="coerce", format="mixed")
         df = df.assign(_sort_inspection_date=sort_dates)
         df = df.sort_values(
             ["Inspection ID", "_sort_inspection_date"], ascending=[True, False]

@@ -54,4 +54,4 @@ def drop_useless_columns(
     df: pd.DataFrame,
     cols_to_drop: list[str] = COLS_TO_DROP,
 ) -> pd.DataFrame:
-    return df.drop(columns=COLS_TO_DROP)
+    return df.drop(columns=cols_to_drop, errors="ignore")

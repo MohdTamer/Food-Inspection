@@ -31,20 +31,20 @@ class SplitData:
     df: pd.DataFrame
     file_name: str
 
+
 @dataclass
 class DataSplits:
     """Holds the three CSV file names that travel through the post-split pipelines."""
- 
+
     train: str
     val: str
     test: str
- 
+
     def as_tuple(self) -> tuple[str, str, str]:
         return self.train, self.val, self.test
- 
+
     def map(self, fn) -> "DataSplits":
         return DataSplits(fn(self.train), fn(self.val), fn(self.test))
- 
 
 
 class PipelineStage(Enum):

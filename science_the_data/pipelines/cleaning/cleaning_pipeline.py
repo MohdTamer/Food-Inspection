@@ -1,9 +1,9 @@
 from pipelines.validations import validations_pipeline
+from science_the_data.helpers.types import PipelineStage
 from science_the_data.pipelines.cleaning.drop_columns import drop_useless_columns_pipeline
 from science_the_data.pipelines.cleaning.drop_nulls import remove_nulls_dups_pipeline
 from science_the_data.pipelines.cleaning.geo_features import geo_blocking_pipeline
 from science_the_data.pipelines.cleaning.quarintine import quarantine_pipeline
-from science_the_data.helpers.types import PipelineStage
 
 
 def cleaning_pipeline(raw_csv_name: str) -> str:

@@ -7,7 +7,7 @@ from loguru import logger
 from helpers.pipeline_logger import PipelineLogger
 from helpers.splits_io import load_splits, save_splits
 from science_the_data.helpers.types import PipelineStage, SplitData
-from transformations.pruning import prune_columns
+from science_the_data.transformations.pruning import prune_columns
 
 
 def pruning_pipeline(

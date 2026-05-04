@@ -82,7 +82,7 @@ def splitting_pipeline(
 
     logger.info(
         "Cutoff date: {}  (index {}/{})",
-        cutoff_date.date(), # type: ignore
+        cutoff_date.date(),  # type: ignore
         cutoff_idx,
         len(df),
     )
@@ -100,7 +100,7 @@ def splitting_pipeline(
 
     logger.info(
         "Val cutoff date: {}  (index {}/{})",
-        val_cutoff_date.date(), # type: ignore
+        val_cutoff_date.date(),  # type: ignore
         val_cutoff_idx,
         len(df_train) + len(df_val),
     )

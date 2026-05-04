@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import joblib
 from pathlib import Path
 
-import pandas as pd
+import joblib
 from loguru import logger
+import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 
 from models.evaluation import evaluate
@@ -32,12 +32,14 @@ def train(
     model.fit(X_train, y_train)
 
     train_metrics = evaluate(model, X_train, y_train, "Random Forest — Train")
-    val_metrics   = evaluate(model, X_val,   y_val,   "Random Forest — Val")
+    val_metrics = evaluate(model, X_val, y_val, "Random Forest — Val")
 
-    importance_df = pd.DataFrame({
-        "feature":    X_train.columns,
-        "importance": model.feature_importances_,
-    }).sort_values("importance", ascending=False)
+    importance_df = pd.DataFrame(
+        {
+            "feature": X_train.columns,
+            "importance": model.feature_importances_,
+        }
+    ).sort_values("importance", ascending=False)
     logger.info("Feature importances:\n{}", importance_df.to_string(index=False))
 
     models_dir.mkdir(parents=True, exist_ok=True)

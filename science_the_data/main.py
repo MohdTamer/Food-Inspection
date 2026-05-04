@@ -22,6 +22,7 @@ def run_splitting(clean_csv_name: str) -> tuple[DataSplits, object]:
     )
     return DataSplits(train_csv, val_csv, test_csv), eda
 
+    train_models_pipeline(train_csv, val_csv, test_csv, PipelineStage.PROCESSED)
 
 def run_transformations(splits: DataSplits, eda=None) -> DataSplits:
     return transformations_pipeline(splits, eda)

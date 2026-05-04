@@ -29,10 +29,6 @@ run:
 dashboard:
 	poetry run streamlit run $(ROOT_DIR)dashboard/app.py
 
-.PHONY: dataset
-dataset:
-	poetry run $(PYTHON_INTERPRETER) $(ROOT_DIR)dataset.py
-
 ## Install Python dependencies
 .PHONY: requirements
 requirements:

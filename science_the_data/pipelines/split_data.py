@@ -82,9 +82,9 @@ def splitting_pipeline(
 
     logger.info(
         "Cutoff date: {}  (index {}/{})",
-        cutoff_date.date(),
+        cutoff_date.date(),  # type: ignore
         cutoff_idx,
-        len(df),  # type: ignore
+        len(df),
     )
 
     train_mask = df[DATE_COL] < cutoff_date
@@ -100,9 +100,9 @@ def splitting_pipeline(
 
     logger.info(
         "Val cutoff date: {}  (index {}/{})",
-        val_cutoff_date.date(),
+        val_cutoff_date.date(),  # type: ignore
         val_cutoff_idx,
-        len(df_train) + len(df_val),  # type: ignore
+        len(df_train) + len(df_val),
     )
 
     for label, subset in [("train", df_train), ("val", df_val), ("test", df_test)]:

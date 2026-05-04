@@ -7,7 +7,7 @@ import typer
 from reports.sections.eda import render_eda
 from science_the_data.helpers.path_resolver import PathResolver
 from science_the_data.helpers.types import PipelineStage
-from science_the_data.reports.report import write_report
+from science_the_data.reports.validations_report import write_report
 from science_the_data.validations.expectations import run_gx_validation
 from science_the_data.validations.quality import run_quality_checks
 from science_the_data.validations.stats import compute_basic_stats

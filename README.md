@@ -59,3 +59,5 @@ before starting, remember to 'poetry install'
 
 --------
 
+To Run mlflow:
+mlflow ui --backend-store-uri mlruns

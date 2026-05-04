@@ -98,6 +98,7 @@ def engineer_license_expiry(
 
     return df_train, df_val, df_test
 
+
 def segment_inspection_date(
     df_train: pd.DataFrame,
     df_val: pd.DataFrame,

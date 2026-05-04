@@ -76,8 +76,8 @@ def train_models_pipeline(
         df[bool_cols] = df[bool_cols].astype(int)
 
     X_train, y_train = train.drop(columns=TARGET), train[TARGET]
-    X_val,   y_val   = val.drop(columns=TARGET),   val[TARGET]
-    X_test,  y_test  = test.drop(columns=TARGET),  test[TARGET]
+    X_val, y_val = val.drop(columns=TARGET), val[TARGET]
+    X_test, y_test = test.drop(columns=TARGET), test[TARGET]
 
     feature_names = X_train.columns.tolist()
     logs_dir = Path("logs")
@@ -96,21 +96,21 @@ def train_models_pipeline(
                 # flat val metrics at top level (keeps render_models / reporting working)
                 **val_m,
                 # train metrics for overfitting check
-                "train_roc_auc":           train_m["roc_auc"],
-                "train_fnr":               train_m["false_negative_rate"],
-                "train_fpr":               train_m["false_positive_rate"],
-                "train_f1_fail":           train_m["f1_fail"],
+                "train_roc_auc": train_m["roc_auc"],
+                "train_fnr": train_m["false_negative_rate"],
+                "train_fpr": train_m["false_positive_rate"],
+                "train_f1_fail": train_m["f1_fail"],
                 "train_balanced_accuracy": train_m["balanced_accuracy"],
                 # test metrics (honest final evaluation)
-                "test_roc_auc":           test_m["roc_auc"],
-                "test_f1_fail":           test_m["f1_fail"],
-                "test_fnr":               test_m["false_negative_rate"],
-                "test_fpr":               test_m["false_positive_rate"],
+                "test_roc_auc": test_m["roc_auc"],
+                "test_f1_fail": test_m["f1_fail"],
+                "test_fnr": test_m["false_negative_rate"],
+                "test_fpr": test_m["false_positive_rate"],
                 "test_balanced_accuracy": test_m["balanced_accuracy"],
-                "test_pr_auc":            test_m["pr_auc"],
-                "test_mcc":               test_m["mcc"],
-                "test_precision_fail":    test_m["precision_fail"],
-                "test_recall_fail":       test_m["recall_fail"],
+                "test_pr_auc": test_m["pr_auc"],
+                "test_mcc": test_m["mcc"],
+                "test_precision_fail": test_m["precision_fail"],
+                "test_recall_fail": test_m["recall_fail"],
             }
         )
 

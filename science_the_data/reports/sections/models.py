@@ -17,9 +17,13 @@ def render_models(results: list[dict]) -> list[str]:
 
     # --- Summary table: val vs test ---
     lines.append("### Summary (Val → Test)\n")
-    lines.append("| Model | Val ROC-AUC | Test ROC-AUC | Val F1-Fail | Test F1-Fail | Val FNR | Test FNR |")
+    lines.append(
+        "| Model | Val ROC-AUC | Test ROC-AUC | Val F1-Fail | Test F1-Fail | Val FNR | Test FNR |"
+    )
     lines.append("|---|---|---|---|---|---|---|")
-    for r in sorted(results, key=lambda x: x.get("test_roc_auc", x.get("roc_auc", 0)), reverse=True):
+    for r in sorted(
+        results, key=lambda x: x.get("test_roc_auc", x.get("roc_auc", 0)), reverse=True
+    ):
         name = r.get("model", r.get("split", "Unknown"))
         lines.append(
             f"| {name}"
@@ -47,8 +51,10 @@ def render_models(results: list[dict]) -> list[str]:
 
         # Val metrics
         lines.append(f"- **Val ROC-AUC:** {r.get('roc_auc', 0):.4f}")
-        lines.append(f"- **Val FNR:** {r.get('fnr', r.get('false_negative_rate', 0)):.4f}"
-                     f"  |  **Val FPR:** {r.get('fpr', r.get('false_positive_rate', 0)):.4f}")
+        lines.append(
+            f"- **Val FNR:** {r.get('fnr', r.get('false_negative_rate', 0)):.4f}"
+            f"  |  **Val FPR:** {r.get('fpr', r.get('false_positive_rate', 0)):.4f}"
+        )
         if "accuracy" in r:
             lines.append(f"- **Val Accuracy:** {r['accuracy']:.4f}")
         lines.append("")
@@ -56,24 +62,33 @@ def render_models(results: list[dict]) -> list[str]:
         # Test metrics
         if "test_roc_auc" in r:
             lines.append(f"- **Test ROC-AUC:** {r['test_roc_auc']:.4f}")
-            lines.append(f"- **Test FNR:** {r.get('test_fnr', 0):.4f}"
-                         f"  |  **Test FPR:** {r.get('test_fpr', 0):.4f}")
-            lines.append(f"- **Test F1-Fail:** {r.get('test_f1_fail', 0):.4f}"
-                         f"  |  **Test Balanced Acc:** {r.get('test_balanced_accuracy', 0):.4f}")
+            lines.append(
+                f"- **Test FNR:** {r.get('test_fnr', 0):.4f}"
+                f"  |  **Test FPR:** {r.get('test_fpr', 0):.4f}"
+            )
+            lines.append(
+                f"- **Test F1-Fail:** {r.get('test_f1_fail', 0):.4f}"
+                f"  |  **Test Balanced Acc:** {r.get('test_balanced_accuracy', 0):.4f}"
+            )
             lines.append("")
 
         # Train vs Val overfitting check
         if "train_roc_auc" in r:
             gap = r["train_roc_auc"] - r.get("roc_auc", 0)
-            lines.append(
-                f"- **Train ROC-AUC:** {r['train_roc_auc']:.4f}  (val gap: `{gap:+.4f}`)"
-            )
+            lines.append(f"- **Train ROC-AUC:** {r['train_roc_auc']:.4f}  (val gap: `{gap:+.4f}`)")
             lines.append("")
 
         # Val classification table
         has_clf = all(
-            k in r for k in ("precision_pass", "recall_pass", "f1_pass",
-                              "precision_fail", "recall_fail", "f1_fail")
+            k in r
+            for k in (
+                "precision_pass",
+                "recall_pass",
+                "f1_pass",
+                "precision_fail",
+                "recall_fail",
+                "f1_fail",
+            )
         )
         if has_clf:
             lines.append("**Val classification report:**\n")

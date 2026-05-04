@@ -5,11 +5,12 @@ from pathlib import Path
 import joblib
 from loguru import logger
 import pandas as pd
+from imblearn.pipeline import Pipeline
+from imblearn.under_sampling import RandomUnderSampler
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from models.evaluation import evaluate
+from science_the_data.models.evaluation import evaluate
 
 
 def train(
@@ -20,14 +21,16 @@ def train(
     models_dir: Path,
 ) -> tuple[Pipeline, dict, dict]:
 
-    # KNN is sensitive to scale — wrap in pipeline
+    # RandomUnderSampler balances the training set before KNN fits.
+    # During predict/predict_proba the sampler is skipped — only the scaler applies.
     pipeline = Pipeline(
         [
             ("scaler", StandardScaler()),
+            ("sampler", RandomUnderSampler(random_state=42)),
             (
                 "model",
                 KNeighborsClassifier(
-                    n_neighbors=11,
+                    n_neighbors=21,
                     weights="distance",
                     metric="euclidean",
                     n_jobs=-1,
@@ -38,8 +41,8 @@ def train(
 
     pipeline.fit(X_train, y_train)
 
-    train_metrics = evaluate(pipeline, X_train, y_train, "KNN — Train")
-    val_metrics = evaluate(pipeline, X_val, y_val, "KNN — Val")
+    _, _, train_metrics = evaluate(pipeline, X_train, y_train, "KNN — Train")
+    _, _, val_metrics = evaluate(pipeline, X_val, y_val, "KNN — Val")
 
     models_dir.mkdir(parents=True, exist_ok=True)
     joblib.dump(pipeline, models_dir / "knn.pkl")

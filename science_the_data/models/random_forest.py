@@ -7,7 +7,7 @@ from loguru import logger
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 
-from models.evaluation import evaluate
+from science_the_data.models.evaluation import evaluate
 
 
 def train(
@@ -31,8 +31,8 @@ def train(
 
     model.fit(X_train, y_train)
 
-    train_metrics = evaluate(model, X_train, y_train, "Random Forest — Train")
-    val_metrics = evaluate(model, X_val, y_val, "Random Forest — Val")
+    _, _, train_metrics = evaluate(model, X_train, y_train, "Random Forest — Train")
+    _, _, val_metrics = evaluate(model, X_val, y_val, "Random Forest — Val")
 
     importance_df = pd.DataFrame(
         {

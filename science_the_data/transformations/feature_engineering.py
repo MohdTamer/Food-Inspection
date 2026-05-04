@@ -98,6 +98,35 @@ def engineer_license_expiry(
 
     return df_train, df_val, df_test
 
+def segment_inspection_date(
+    df_train: pd.DataFrame,
+    df_val: pd.DataFrame,
+    df_test: pd.DataFrame,
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    df_train = df_train.copy()
+    df_val = df_val.copy()
+    df_test = df_test.copy()
+
+    for df in [df_train, df_val, df_test]:
+        df["inspection_year"] = df["Inspection Date"].dt.year
+        df["inspection_month"] = df["Inspection Date"].dt.month
+        df["inspection_dayofweek"] = df["Inspection Date"].dt.dayofweek
+        df["inspection_quarter"] = df["Inspection Date"].dt.quarter
+
+    logger.info(
+        "Inspection date features extracted — train range: {} → {}",
+        df_train["Inspection Date"].min().date(),
+        df_train["Inspection Date"].max().date(),
+    )
+    logger.info(
+        "inspection_year stats (train): min={}, max={}, nunique={}",
+        int(df_train["inspection_year"].min()),
+        int(df_train["inspection_year"].max()),
+        df_train["inspection_year"].nunique(),
+    )
+
+    return df_train, df_val, df_test
+
 
 def apply_feature_engineering(
     df_train: pd.DataFrame,
@@ -107,4 +136,5 @@ def apply_feature_engineering(
     df_train, df_val, df_test = encode_risk(df_train, df_val, df_test)
     df_train, df_val, df_test = parse_dates(df_train, df_val, df_test)
     df_train, df_val, df_test = engineer_license_expiry(df_train, df_val, df_test)
+    df_train, df_val, df_test = segment_inspection_date(df_train, df_val, df_test)
     return df_train, df_val, df_test

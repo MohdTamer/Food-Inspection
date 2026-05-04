@@ -12,8 +12,16 @@ def class_balance(df: pd.DataFrame, target: str = "Results") -> dict:
     }
 
 
+def cardinality_summary(df: pd.DataFrame) -> pd.DataFrame:
+    return pd.DataFrame({
+        "unique_values": df.nunique(),
+        "dtype": df.dtypes
+    }).sort_values("unique_values", ascending=False)
+
 def numeric_summary(df: pd.DataFrame) -> pd.DataFrame:
-    return df.select_dtypes(include="number").describe().T
+    stats = df.select_dtypes(include="number").describe().T
+    stats['skew'] = df.select_dtypes(include="number").skew()
+    return stats
 
 
 def top_facility_types(df: pd.DataFrame, n: int = 10) -> pd.Series:

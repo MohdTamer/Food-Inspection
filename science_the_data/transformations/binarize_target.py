@@ -23,7 +23,6 @@ def binarize_target(df: pd.DataFrame) -> pd.DataFrame:
     assert binary.isna().sum() == 0, "Unmapped values in 'Results'!"
 
     df["Results"] = binary.astype(int)
-    df = df.drop(columns=["violation_count"])
 
     logger.info(
         "Binarization complete (PwC threshold = {}) — class counts: {}",

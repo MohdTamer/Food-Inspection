@@ -5,12 +5,13 @@ import pickle
 
 from loguru import logger
 
-from science_the_data.eda import correlations, distributions, geo, missing, temporal
-from science_the_data.helpers.types import DataSplits, PipelineStage
+from science_the_data.eda import correlations, distributions, missing
 from science_the_data.helpers.splits_io import load_splits
+from science_the_data.helpers.types import DataSplits, PipelineStage
 
 EDA_CACHE_DIR = Path("eda_cache")
 TARGET = "Results"
+
 
 def eda_pipeline(splits: DataSplits) -> None:
     stage = PipelineStage.PROCESSED
@@ -58,17 +59,17 @@ def eda_pipeline(splits: DataSplits) -> None:
         payload["target_correlation"].iloc[0] if not payload["target_correlation"].empty else 0,
     )
 
-    logger.info("Computing temporal trends ...")
-    payload["inspections_over_time"] = temporal.inspections_over_time(df_train)
-    payload["fail_rate_over_time"] = temporal.fail_rate_over_time(df_train)
+    logger.info("Computing violation statistics...")
+    payload["violations"] = distributions.violation_summary(df_train)
 
-    logger.info("Computing geo distributions ...")
-    payload["geo_sample"] = geo.geo_sample(df_train)
-    payload["fail_rate_by_community"] = geo.fail_rate_by_community(df_train)
+    if payload["violations"]:
+        logger.info(
+            "Average violations per inspection: {:.2f}", payload["violations"]["mean_violations"]
+        )
 
     EDA_CACHE_DIR.mkdir(parents=True, exist_ok=True)
     cache_path = EDA_CACHE_DIR / "eda_payload.pkl"
-    
+
     with open(cache_path, "wb") as f:
         pickle.dump(payload, f)
 

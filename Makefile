@@ -14,7 +14,7 @@ endif
 #################################################################################
 # PATHS                                                                         #
 #################################################################################
-PIPELINES_DIR = science_the_data/
+ROOT_DIR = science_the_data/
 
 #################################################################################
 # COMMANDS                                                                      #
@@ -23,11 +23,15 @@ PIPELINES_DIR = science_the_data/
 ## run the main script
 .PHONY: run
 run:
-	poetry run $(PYTHON_INTERPRETER) $(PIPELINES_DIR)main.py
+	poetry run $(PYTHON_INTERPRETER) $(ROOT_DIR)main.py
 
-.PHNOY: dataset
+.PHONY: dashboard
+dashboard:
+	poetry run streamlit run $(ROOT_DIR)dashboard/app.py
+
+.PHONY: dataset
 dataset:
-	poetry run $(PYTHON_INTERPRETER) $(PIPELINES_DIR)dataset.py
+	poetry run $(PYTHON_INTERPRETER) $(ROOT_DIR)dataset.py
 
 ## Install Python dependencies
 .PHONY: requirements

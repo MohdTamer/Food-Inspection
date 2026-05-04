@@ -9,30 +9,31 @@ from pipelines.split_data import splitting_pipeline
 from pipelines.validations import validations_pipeline
 from science_the_data.helpers.types import PipelineStage
 from science_the_data.pipelines.drop_nulls import remove_nulls_dups_pipeline
+from science_the_data.pipelines.pruning import pruning_pipeline
 
 app = typer.Typer()
 
 
 @app.command()
 def main():
-    raw_csv_file_name = "merged_inspections_licenses_inner.csv"
-    STAGE = PipelineStage.RAW
-    validations_pipeline(raw_csv_file_name, STAGE)
+    # raw_csv_file_name = "merged_inspections_licenses_inner.csv"
+    # STAGE = PipelineStage.RAW
+    # validations_pipeline(raw_csv_file_name, STAGE)
 
-    STAGE = PipelineStage.INTERIM
+    # STAGE = PipelineStage.INTERIM
 
-    outputFileName = remove_nulls_dups_pipeline(raw_csv_file_name, STAGE)
-    validations_pipeline(outputFileName, STAGE)
+    # outputFileName = remove_nulls_dups_pipeline(raw_csv_file_name, STAGE)
+    # validations_pipeline(outputFileName, STAGE)
 
-    outputFileName = drop_useless_columns_pipeline(outputFileName, STAGE)
-    validations_pipeline(outputFileName, STAGE)
+    # outputFileName = drop_useless_columns_pipeline(outputFileName, STAGE)
+    # validations_pipeline(outputFileName, STAGE)
 
-    outputFileName = geo_blocking_pipeline(outputFileName, STAGE)
-    validations_pipeline(outputFileName, STAGE)
+    # outputFileName = geo_blocking_pipeline(outputFileName, STAGE)
+    # validations_pipeline(outputFileName, STAGE)
 
-    STAGE = PipelineStage.CLEANED
-    quarntined = quarantine_pipeline(outputFileName, STAGE)
-    validations_pipeline(quarntined, STAGE)
+    # STAGE = PipelineStage.CLEANED
+    # quarntined = quarantine_pipeline(outputFileName, STAGE)
+    # validations_pipeline(quarntined, STAGE)
     quarntined = "clean_final.csv"
 
     train_csv, val_csv, test_csv, eda = splitting_pipeline(
@@ -55,6 +56,10 @@ def main():
     )
     apply_validation_pipeline_to_list((train_csv, val_csv, test_csv), STAGE)
 
+    train_csv, val_csv, test_csv = pruning_pipeline(
+        train_csv, val_csv, test_csv, PipelineStage.PROCESSED
+    )
+    apply_validation_pipeline_to_list((train_csv, val_csv, test_csv), STAGE)
 
 def apply_validation_pipeline_to_list(csv_names: tuple, stage: PipelineStage, eda=None) -> None:
     for item in csv_names:

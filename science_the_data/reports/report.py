@@ -1,24 +1,3 @@
-"""
-reports/report.py
------------------
-Orchestrates section renderers and writes the final Markdown report.
-
-Backward-compatible extension
-------------------------------
-The original signature is preserved exactly.  New callers can pass
-``extra_sections`` — a list of pre-rendered ``list[str]`` blocks — to
-inject EDA, split summaries, or any future section **without** touching
-this file again.
-
-Example
--------
->>> from reports.sections.eda import render_eda
->>> from reports.report import write_report
->>>
->>> eda_lines = render_eda(my_eda_dict)
->>> write_report(stats, issues, gx_results, out_dir, extra_sections=[eda_lines])
-"""
-
 from __future__ import annotations
 
 from datetime import datetime
@@ -45,7 +24,6 @@ def write_report(
     output_dir: Path,
     skip_gx: bool = False,
     filename: str | None = None,
-    # ── New, optional ────────────────────────────────────────────────────
     extra_sections: list[list[str]] | None = None,
 ) -> Path:
     """

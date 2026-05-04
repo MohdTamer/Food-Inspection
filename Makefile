@@ -43,21 +43,24 @@ clean:
 ## Lint using ruff (use `make format` to do formatting)
 .PHONY: lint
 lint:
-	ruff format --check
-	ruff check
+	poetry run ruff format --check
+	poetry run ruff check
 
 ## Format source code with ruff
 .PHONY: format
 format:
-	ruff check --fix
-	ruff format
+	poetry run ruff check --fix
+	poetry run ruff format
 
+## Run all unit tests
+.PHONY: test-unit
+test-unit:
+	poetry run python -m pytest tests/ -v
 
-
-## Run tests
-.PHONY: test
-test:
-	python -m pytest tests
+## Run all unit tests with coverage report
+.PHONY: test-unit-coverage
+test-unit-coverage:
+	poetry run python -m pytest tests/ -v --cov=science_the_data --cov-report=term-missing
 
 ## Remove pycache and test artifacts
 .PHONY: clean-tests

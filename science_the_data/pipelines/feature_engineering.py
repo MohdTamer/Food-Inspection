@@ -41,13 +41,13 @@ def feature_engineering_pipeline(
     )
 
     train_csv_name = "risk_engineered_train.csv"
-    val_csv_name   = "risk_engineered_val.csv"
-    test_csv_name  = "risk_engineered_test.csv"
+    val_csv_name = "risk_engineered_val.csv"
+    test_csv_name = "risk_engineered_test.csv"
 
     train_csv_name, val_csv_name, test_csv_name = save_splits(
         train=SplitData(df=train, file_name=train_csv_name),
-        val=SplitData(df=val,     file_name=val_csv_name),
-        test=SplitData(df=test,   file_name=test_csv_name),
+        val=SplitData(df=val, file_name=val_csv_name),
+        test=SplitData(df=test, file_name=test_csv_name),
         stage=stage,
     )
 

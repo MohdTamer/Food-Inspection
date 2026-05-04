@@ -1,4 +1,5 @@
-from typing import TypedDict, Any
+from typing import Any, TypedDict
+
 
 class Issue(TypedDict):
     field: str

@@ -31,8 +31,8 @@ def transformations_pipeline(
     )
 
     train = binarize_target(train)
-    val   = binarize_target(val)
-    test  = binarize_target(test)
+    val = binarize_target(val)
+    test = binarize_target(test)
 
     for label, subset in [("train", train), ("val", val), ("test", test)]:
         pipeline_logger.log_step(
@@ -45,13 +45,13 @@ def transformations_pipeline(
         )
 
     train_csv_name = "binary_encoding_train.csv"
-    val_csv_name   = "binary_encoding_val.csv"
-    test_csv_name  = "binary_encoding_test.csv"
+    val_csv_name = "binary_encoding_val.csv"
+    test_csv_name = "binary_encoding_test.csv"
 
     train_csv_name, val_csv_name, test_csv_name = save_splits(
         train=SplitData(df=train, file_name=train_csv_name),
-        val=SplitData(df=val,     file_name=val_csv_name),
-        test=SplitData(df=test,   file_name=test_csv_name),
+        val=SplitData(df=val, file_name=val_csv_name),
+        test=SplitData(df=test, file_name=test_csv_name),
         stage=output_stage,
     )
 

@@ -1,18 +1,14 @@
 from __future__ import annotations
 
-import pandas as pd
 from loguru import logger
+import pandas as pd
 
 PwC_THRESHOLD = 4
-TARGET_MAP = { "Pass": 0, "Fail": 1 }
+TARGET_MAP = {"Pass": 0, "Fail": 1}
 
 
 def count_violations(series: pd.Series) -> pd.Series:
-    return (
-        series
-        .fillna("")
-        .apply(lambda x: len(x.split(" | ")) if x.strip() else 0)
-    )
+    return series.fillna("").apply(lambda x: len(x.split(" | ")) if x.strip() else 0)
 
 
 def binarize_target(df: pd.DataFrame) -> pd.DataFrame:
@@ -20,7 +16,7 @@ def binarize_target(df: pd.DataFrame) -> pd.DataFrame:
 
     df["violation_count"] = count_violations(df["Violations"])
 
-    binary   = df["Results"].map(TARGET_MAP)
+    binary = df["Results"].map(TARGET_MAP)
     pwc_mask = df["Results"] == "Pass w/ Conditions"
     binary[pwc_mask] = (df.loc[pwc_mask, "violation_count"] >= PwC_THRESHOLD).astype(int)
 

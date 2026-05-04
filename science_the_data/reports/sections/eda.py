@@ -26,9 +26,8 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-
 _FIGURE_CAPTIONS: dict[str, str] = {
-    "target_distribution":   "Target (`Results`) distribution across Train, Test, and Overall splits.",
+    "target_distribution": "Target (`Results`) distribution across Train, Test, and Overall splits.",
     "inspections_over_time": "Monthly inspection volume coloured by split boundary.",
 }
 

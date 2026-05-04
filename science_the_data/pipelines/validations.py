@@ -1,24 +1,25 @@
-import pandas as pd
-import typer
-from loguru import logger
 from pathlib import Path
 
-from helpers.path_resolver import PathResolver
-from science_the_data.helpers.types import PipelineStage
+from loguru import logger
+import pandas as pd
+import typer
+
 from reports.sections.eda import render_eda
 from science_the_data.helpers.path_resolver import PathResolver
-from science_the_data.validations.stats import compute_basic_stats
-from science_the_data.validations.quality import run_quality_checks
-from science_the_data.validations.expectations import run_gx_validation
+from science_the_data.helpers.types import PipelineStage
 from science_the_data.reports.report import write_report
+from science_the_data.validations.expectations import run_gx_validation
+from science_the_data.validations.quality import run_quality_checks
+from science_the_data.validations.stats import compute_basic_stats
+
 
 def validations_pipeline(
     input_csv_name: str,
     stage: PipelineStage,
     eda: dict | None = None,
 ) -> None:
-    csv_path    = PathResolver.get_data_path_from_stage(input_csv_name, stage)
-    report_dir  = PathResolver.get_report_path_from_stage(input_csv_name, stage)
+    csv_path = PathResolver.get_data_path_from_stage(input_csv_name, stage)
+    report_dir = PathResolver.get_report_path_from_stage(input_csv_name, stage)
     extra_sections = [render_eda(eda, report_dir)] if eda else None
     run_validations(
         input_path=csv_path,
@@ -27,11 +28,12 @@ def validations_pipeline(
         extra_sections=extra_sections,
     )
 
+
 def run_validations(
-    input_path:     Path = PathResolver.get_processed_data_path("output.csv"),
-    output_dir:     Path = PathResolver.REPORT_DIR,
-    skip_gx:        bool = typer.Option(False, "--skip-gx"),
-    extra_sections: list[list[str]] | None = None, # usually for EDAs
+    input_path: Path = PathResolver.get_processed_data_path("output.csv"),
+    output_dir: Path = PathResolver.REPORT_DIR,
+    skip_gx: bool = typer.Option(False, "--skip-gx"),
+    extra_sections: list[list[str]] | None = None,  # usually for EDAs
 ) -> None:
     logger.info("Running validations on {}", input_path)
 

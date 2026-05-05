@@ -47,6 +47,9 @@ def page_tenure(raw: Optional[dict]) -> None:
         tenure_df = pd.DataFrame(rows)
         tenure_df["Outcome"] = tenure_df["Outcome"].astype(str)
 
+        tenure_df["_sort_key"] = tenure_df["Business Age"].str.extract(r"(\d+)").astype(int)
+        tenure_df = tenure_df.sort_values("_sort_key").drop(columns="_sort_key")
+
         fig = px.bar(
             tenure_df,
             x="Business Age",
@@ -62,9 +65,12 @@ def page_tenure(raw: Optional[dict]) -> None:
         pivot = tenure_df.pivot_table(
             index="Business Age", columns="Outcome", values="Inspections", aggfunc="sum"
         ).fillna(0)
+
         if "Pass" in pivot.columns and "Fail" in pivot.columns:
             pivot["Fail Rate"] = pivot["Fail"] / (pivot["Pass"] + pivot["Fail"])
-            pivot = pivot.reset_index()
+            pivot = pivot.sort_index(
+                key=lambda idx: idx.str.extract(r"(\d+)")[0].astype(int)
+            ).reset_index()
 
             fig2 = px.line(
                 pivot,
@@ -73,6 +79,7 @@ def page_tenure(raw: Optional[dict]) -> None:
                 markers=True,
                 color_discrete_sequence=[ACCENT],
             )
+
             fig2.add_hline(
                 y=pivot["Fail Rate"].mean(),
                 line_dash="dash",
@@ -80,6 +87,7 @@ def page_tenure(raw: Optional[dict]) -> None:
                 annotation_text="Average",
                 annotation_font_color=SUBTEXT,
             )
+
             fig2.update_yaxes(tickformat=".0%")
             fig2 = chart_layout(fig2, "Fail Rate Across Business Age Brackets")
             st.plotly_chart(fig2, use_container_width=True)
@@ -89,5 +97,6 @@ def page_tenure(raw: Optional[dict]) -> None:
             "for <strong>prioritising newly-licensed establishments</strong> in inspection "
             "scheduling — catching problems before they become entrenched."
         )
+        
     else:
         st.info("Per-class tenure breakdown not available in this cache.")

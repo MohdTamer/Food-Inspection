@@ -1,7 +1,8 @@
-import streamlit  as st
 import plotly.graph_objects as go
+import streamlit as st
 
-from science_the_data.dashboard.inject_css import (PASS_COLOR, FAIL_COLOR, TEXT, CHART_FONT, SUBTEXT)
+from science_the_data.dashboard.inject_css import CHART_FONT, SUBTEXT, TEXT
+
 
 def chart_layout(fig: go.Figure, title: str = "") -> go.Figure:
     """Apply consistent dark theme to every Plotly figure."""

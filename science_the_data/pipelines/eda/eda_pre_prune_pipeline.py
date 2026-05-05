@@ -61,14 +61,12 @@ def eda_pre_prune_pipeline(splits: DataSplits) -> None:
 
     if "Facility Type" in df_train.columns:
         logger.info("Computing facility type stats ...")
-        payload["top_facility_types"] = (
-            df_train["Facility Type"].value_counts().head(15)
-        )
+        payload["top_facility_types"] = df_train["Facility Type"].value_counts().head(15)
         payload["facility_fail_rates"] = (
             df_train.groupby("Facility Type")[TARGET]
             .agg(total="count", failures="sum")
             .assign(fail_rate=lambda d: d["failures"] / d["total"])
-            .query("total >= 50")           # drop statistically thin slices
+            .query("total >= 50")  # drop statistically thin slices
             .sort_values("fail_rate", ascending=False)
             .reset_index()
         )

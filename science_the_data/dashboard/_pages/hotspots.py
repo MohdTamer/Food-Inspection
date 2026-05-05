@@ -6,7 +6,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from science_the_data.dashboard.drawer import subtitle, section, chart_layout, insight
+from science_the_data.dashboard.drawer import chart_layout, insight, section, subtitle
 from science_the_data.dashboard.inject_css import SUBTEXT
 
 
@@ -28,15 +28,13 @@ def page_hotspots(pre_prune: Optional[dict]) -> None:
         return
 
     centers_df = pd.DataFrame(geo["cluster_centers"])
-    sizes      = [geo["cluster_sizes"].get(i, 1) for i in range(geo["n_clusters"])]
+    sizes = [geo["cluster_sizes"].get(i, 1) for i in range(geo["n_clusters"])]
 
     c1, c2, c3 = st.columns(3)
     worst_cluster = max(geo["cluster_fail_rate"], key=geo["cluster_fail_rate"].get)
     c1.metric("Geographic Clusters", geo["n_clusters"])
-    c2.metric("Highest-Risk Cluster Fail Rate",
-              f"{geo['cluster_fail_rate'][worst_cluster]:.1%}")
-    c3.metric("Missing Location Data",
-              f"{geo['missing_pct'].get('Latitude', 0):.1%}")
+    c2.metric("Highest-Risk Cluster Fail Rate", f"{geo['cluster_fail_rate'][worst_cluster]:.1%}")
+    c3.metric("Missing Location Data", f"{geo['missing_pct'].get('Latitude', 0):.1%}")
 
     st.divider()
 
@@ -52,8 +50,12 @@ def page_hotspots(pre_prune: Optional[dict]) -> None:
             size=sizes,
             size_max=40,
             color_continuous_scale="RdYlGn_r",
-            hover_data={"cluster": True, "fail_rate": ":.1%",
-                        "Latitude": False, "Longitude": False},
+            hover_data={
+                "cluster": True,
+                "fail_rate": ":.1%",
+                "Latitude": False,
+                "Longitude": False,
+            },
             labels={"fail_rate": "Fail Rate", "cluster": "Cluster"},
         )
         fig_map.update_coloraxes(
@@ -66,13 +68,10 @@ def page_hotspots(pre_prune: Optional[dict]) -> None:
 
     with col_bar:
         section("Fail Rate Ranking — All Clusters")
-        fail_rate_df = (
-            pd.DataFrame(
-                list(geo["cluster_fail_rate"].items()),
-                columns=["Cluster", "Fail Rate"],
-            )
-            .sort_values("Fail Rate", ascending=True)
-        )
+        fail_rate_df = pd.DataFrame(
+            list(geo["cluster_fail_rate"].items()),
+            columns=["Cluster", "Fail Rate"],
+        ).sort_values("Fail Rate", ascending=True)
         fig_bar = px.bar(
             fail_rate_df,
             x="Fail Rate",
@@ -82,9 +81,7 @@ def page_hotspots(pre_prune: Optional[dict]) -> None:
             color_continuous_scale="RdYlGn_r",
         )
         fig_bar.update_coloraxes(showscale=False)
-        fig_bar.update_traces(
-            hovertemplate="Cluster %{y}<br>Fail Rate: %{x:.1%}<extra></extra>"
-        )
+        fig_bar.update_traces(hovertemplate="Cluster %{y}<br>Fail Rate: %{x:.1%}<extra></extra>")
         overall_mean = sum(geo["cluster_fail_rate"].values()) / len(geo["cluster_fail_rate"])
         fig_bar.add_vline(
             x=overall_mean,

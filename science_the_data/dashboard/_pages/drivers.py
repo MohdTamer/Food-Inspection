@@ -3,8 +3,8 @@ from __future__ import annotations
 import plotly.express as px
 import streamlit as st
 
-from science_the_data.dashboard.drawer import subtitle, section, chart_layout, insight
-from science_the_data.dashboard.inject_css import FAIL_COLOR, PASS_COLOR, SUBTEXT
+from science_the_data.dashboard.drawer import chart_layout, insight, section, subtitle
+from science_the_data.dashboard.inject_css import FAIL_COLOR, PASS_COLOR
 
 
 def page_drivers(final: dict) -> None:
@@ -60,7 +60,7 @@ def page_drivers(final: dict) -> None:
         corr = final["numeric_correlation"]
         fig_heat = px.imshow(
             corr,
-            text_auto=".2f", # type: ignore
+            text_auto=".2f",  # type: ignore
             color_continuous_scale="RdBu_r",
             aspect="auto",
             zmin=-1,
@@ -71,8 +71,8 @@ def page_drivers(final: dict) -> None:
         st.plotly_chart(fig_heat, use_container_width=True)
 
         top_driver = tc.index[0]
-        top_val    = tc.iloc[0]
-        direction  = "increases" if top_val > 0 else "reduces"
+        top_val = tc.iloc[0]
+        direction = "increases" if top_val > 0 else "reduces"
         insight(
             f"<strong>{top_driver}</strong> is the single strongest signal: "
             f"a higher value {direction} failure probability "

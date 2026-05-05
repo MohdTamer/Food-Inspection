@@ -9,24 +9,21 @@ from pathlib import Path
 import pickle
 from typing import Optional
 
-import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
 import streamlit as st
 
+from science_the_data.dashboard._pages.drivers import page_drivers
+from science_the_data.dashboard._pages.facilities import page_facilities
+from science_the_data.dashboard._pages.hotspots import page_hotspots
+from science_the_data.dashboard._pages.overview import page_overview
+from science_the_data.dashboard._pages.tenure import page_tenure
+from science_the_data.dashboard._pages.violations import page_violations
 from science_the_data.dashboard.inject_css import inject_css
 from science_the_data.helpers.path_resolver import PathResolver
-from science_the_data.dashboard._pages.overview import page_overview
-from science_the_data.dashboard._pages.hotspots import page_hotspots
-from science_the_data.dashboard._pages.facilities import page_facilities
-from science_the_data.dashboard._pages.violations import page_violations
-from science_the_data.dashboard._pages.drivers import page_drivers
-from science_the_data.dashboard._pages.tenure import page_tenure
 
 CACHE_PATHS = {
-    "raw":       PathResolver.get_eda_cache_dir("eda_raw_payload.pkl"),
+    "raw": PathResolver.get_eda_cache_dir("eda_raw_payload.pkl"),
     "pre_prune": PathResolver.get_eda_cache_dir("eda_pre_prune_payload.pkl"),
-    "final":     PathResolver.get_eda_cache_dir("eda_payload.pkl"),
+    "final": PathResolver.get_eda_cache_dir("eda_payload.pkl"),
 }
 
 st.set_page_config(
@@ -36,6 +33,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+
 @st.cache_data
 def load_payload(path: Path) -> Optional[dict]:
     if not path.exists():
@@ -43,42 +41,43 @@ def load_payload(path: Path) -> Optional[dict]:
     with open(path, "rb") as f:
         return pickle.load(f)
 
+
 PAGES = {
-    "🏙️  City Overview":       "overview",
-    "📍  Failure Hotspots":    "hotspots",
-    "🏢  Facility Insights":   "facilities",
-    "⚠️  Violation Patterns":  "violations",
+    "🏙️  City Overview": "overview",
+    "📍  Failure Hotspots": "hotspots",
+    "🏢  Facility Insights": "facilities",
+    "⚠️  Violation Patterns": "violations",
     "📅  Business Age & Risk": "tenure",
-    "🔑  Key Risk Drivers":    "drivers",
+    "🔑  Key Risk Drivers": "drivers",
 }
 
 REQUIRES = {
-    "overview":   ["final"],
-    "hotspots":   ["pre_prune"],
+    "overview": ["final"],
+    "hotspots": ["pre_prune"],
     "facilities": ["final"],
-    "violations": ["final"],          # raw is optional / shown in tab
-    "tenure":     ["raw"],
-    "drivers":    ["final"],
-    "quality":    ["final"],
+    "violations": ["final"],  # raw is optional / shown in tab
+    "tenure": ["raw"],
+    "drivers": ["final"],
+    "quality": ["final"],
 }
 
 
 def main() -> None:
     inject_css()
 
-    raw       = load_payload(CACHE_PATHS["raw"])
+    raw = load_payload(CACHE_PATHS["raw"])
     pre_prune = load_payload(CACHE_PATHS["pre_prune"])
-    final     = load_payload(CACHE_PATHS["final"])
+    final = load_payload(CACHE_PATHS["final"])
 
     st.sidebar.title("Chicago Food\nInspections")
     st.sidebar.markdown("---")
 
     selection = st.sidebar.radio("", list(PAGES.keys()), label_visibility="collapsed")
-    page_key  = PAGES[selection]
+    page_key = PAGES[selection]
 
     # Guard: check required caches
     required = REQUIRES[page_key]
-    caches   = {"raw": raw, "pre_prune": pre_prune, "final": final}
+    caches = {"raw": raw, "pre_prune": pre_prune, "final": final}
     missing_caches = [k for k in required if caches[k] is None]
 
     if missing_caches and page_key not in ("violations", "tenure"):
@@ -88,17 +87,17 @@ def main() -> None:
         return
 
     if page_key == "overview":
-        page_overview(final) # type: ignore
+        page_overview(final)  # type: ignore
     elif page_key == "hotspots":
         page_hotspots(pre_prune)
     elif page_key == "facilities":
         page_facilities(pre_prune)
     elif page_key == "violations":
-        page_violations(final, raw) # type: ignore
+        page_violations(final, raw)  # type: ignore
     elif page_key == "tenure":
         page_tenure(raw)
     elif page_key == "drivers":
-        page_drivers(final) # type: ignore
+        page_drivers(final)  # type: ignore
 
     st.sidebar.markdown("---")
     st.sidebar.markdown(

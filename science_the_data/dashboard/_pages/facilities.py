@@ -5,7 +5,7 @@ from typing import Optional
 import plotly.express as px
 import streamlit as st
 
-from science_the_data.dashboard.drawer import subtitle, section, chart_layout, insight
+from science_the_data.dashboard.drawer import chart_layout, insight, section, subtitle
 from science_the_data.dashboard.inject_css import BLUE, CARD_BG, TEXT
 
 
@@ -17,9 +17,7 @@ def page_facilities(pre_prune: Optional[dict]) -> None:
         "inspection effort is currently concentrated."
     )
 
-    tab1, tab2 = st.tabs(
-        ["  🏪  Failure Rate by Type  ", "  ⚠️  Risk vs Outcome  "]
-    )
+    tab1, tab2 = st.tabs(["  🏪  Failure Rate by Type  ", "  ⚠️  Risk vs Outcome  "])
 
     with tab1:
         if pre_prune and "facility_fail_rates" in pre_prune:

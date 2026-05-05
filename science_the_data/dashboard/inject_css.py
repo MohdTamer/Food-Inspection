@@ -1,15 +1,16 @@
 import streamlit as st
 
-PASS_COLOR  = "#27ae60"
-FAIL_COLOR  = "#e74c3c"
-BLUE        = "#2980b9"
-DARK        = "#1a1a2e"
-MID         = "#16213e"
-CARD_BG     = "#0f3460"
-TEXT        = "#e0e0e0"
-SUBTEXT     = "#a0a0b0"
-ACCENT      = "#e94560"
-CHART_FONT  = "IBM Plex Sans"
+PASS_COLOR = "#27ae60"
+FAIL_COLOR = "#e74c3c"
+BLUE = "#2980b9"
+DARK = "#1a1a2e"
+MID = "#16213e"
+CARD_BG = "#0f3460"
+TEXT = "#e0e0e0"
+SUBTEXT = "#a0a0b0"
+ACCENT = "#e94560"
+CHART_FONT = "IBM Plex Sans"
+
 
 def inject_css() -> None:
     st.markdown(

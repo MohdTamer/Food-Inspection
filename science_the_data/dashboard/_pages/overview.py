@@ -1,8 +1,9 @@
-import streamlit  as st
 import plotly.express as px
+import streamlit as st
 
-from science_the_data.dashboard.drawer import (subtitle, section, chart_layout, insight)
-from science_the_data.dashboard.inject_css import (PASS_COLOR, FAIL_COLOR, TEXT, CHART_FONT)
+from science_the_data.dashboard.drawer import chart_layout, insight, section, subtitle
+from science_the_data.dashboard.inject_css import CHART_FONT, FAIL_COLOR, PASS_COLOR, TEXT
+
 
 def page_overview(final: dict) -> None:
     st.title("🏙️ City Overview")
@@ -12,16 +13,15 @@ def page_overview(final: dict) -> None:
     )
 
     balance = final["class_balance"]
-    total   = sum(balance["counts"].values())
-    pass_n  = balance["counts"].get(0, 0)
-    fail_n  = balance["counts"].get(1, 0)
-    pass_pct = balance["pct"].get(0, 0)
+    total = sum(balance["counts"].values())
+    pass_n = balance["counts"].get(0, 0)
+    fail_n = balance["counts"].get(1, 0)
     fail_pct = balance["pct"].get(1, 0)
 
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Total Inspections",     f"{total:,}")
-    c2.metric("Passed",                f"{pass_n:,}")
-    c3.metric("Failed",                f"{fail_n:,}")
+    c1.metric("Total Inspections", f"{total:,}")
+    c2.metric("Passed", f"{pass_n:,}")
+    c3.metric("Failed", f"{fail_n:,}")
     c4.metric("City-wide Failure Rate", f"{fail_pct:.1f}%")
 
     st.divider()
@@ -40,7 +40,9 @@ def page_overview(final: dict) -> None:
         fig = chart_layout(fig)
         fig.add_annotation(
             text=f"{fail_pct:.1f}%<br><span style='font-size:11px'>Fail Rate</span>",
-            x=0.5, y=0.5, showarrow=False,
+            x=0.5,
+            y=0.5,
+            showarrow=False,
             font=dict(size=20, color=TEXT, family=CHART_FONT),
         )
         st.plotly_chart(fig, use_container_width=True)
@@ -56,7 +58,7 @@ def page_overview(final: dict) -> None:
 
     insight(
         f"<strong>{fail_pct:.1f}%</strong> of inspected establishments failed — roughly "
-        f"<strong>1 in {round(100/fail_pct)}</strong> inspections ends in a failure. "
+        f"<strong>1 in {round(100 / fail_pct)}</strong> inspections ends in a failure. "
         "Identifying which facility types and neighbourhoods drive this number is the focus "
         "of the pages that follow."
     )

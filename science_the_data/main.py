@@ -1,13 +1,15 @@
 import typer
 
 from pipelines.split_data import splitting_pipeline
-from science_the_data.helpers.path_resolver import PathResolver
 from science_the_data.helpers.types import DataSplits, PipelineStage
-from science_the_data.pipelines.eda import eda_final_pipeline, eda_pre_prune_pipeline, eda_raw_pipeline
-from science_the_data.pipelines.cleaning.cleaning_pipeline import cleaning_pipeline
+from science_the_data.pipelines.eda import (
+    eda_final_pipeline,
+    eda_pre_prune_pipeline,
+    eda_raw_pipeline,
+)
+
 # from science_the_data.pipelines.eda.eda_final_pipeline import eda_final_pipeline
 # from science_the_data.pipelines.eda.eda_pre_prune_pipeline import eda_pre_prune_pipeline
-from science_the_data.pipelines.modeling.modelling_pipeline import modelling_pipeline
 from science_the_data.pipelines.transformations.transformations_pipeline import (
     transformations_pipeline,
 )

@@ -6,7 +6,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from science_the_data.dashboard.drawer import subtitle, chart_layout, insight
+from science_the_data.dashboard.drawer import chart_layout, insight, subtitle
 
 
 def page_violations(final: dict, raw: Optional[dict]) -> None:
@@ -52,9 +52,9 @@ def page_violations(final: dict, raw: Optional[dict]) -> None:
             fig = chart_layout(fig, "How Many Violations Does a Typical Inspection Find?")
             st.plotly_chart(fig, use_container_width=True)
 
-            strength = "strong" if abs(corr) > 0.4 else "moderate" if abs(corr) > 0.2 else "weak" # type: ignore
+            strength = "strong" if abs(corr) > 0.4 else "moderate" if abs(corr) > 0.2 else "weak"  # type: ignore
             insight(
-                f"There is a <strong>{strength} positive correlation ({corr:.3f})</strong> between " # type: ignore
+                f"There is a <strong>{strength} positive correlation ({corr:.3f})</strong> between "  # type: ignore
                 "the number of violations found and a failed outcome. "
                 "In practice this means inspectors finding more violations should treat that "
                 "as an escalating failure signal, not just a list of items to address."
@@ -74,9 +74,9 @@ def page_violations(final: dict, raw: Optional[dict]) -> None:
 
             describe = rv["describe"]
             rc1, rc2, rc3 = st.columns(3)
-            rc1.metric("Mean (raw)",   f"{describe.get('mean', 0):.1f}")
+            rc1.metric("Mean (raw)", f"{describe.get('mean', 0):.1f}")
             rc2.metric("Median (raw)", f"{describe.get('50%', 0):.0f}")
-            rc3.metric("Max (raw)",    f"{describe.get('max', 0):.0f}")
+            rc3.metric("Max (raw)", f"{describe.get('max', 0):.0f}")
 
             fig_raw = px.bar(
                 raw_dist_df,

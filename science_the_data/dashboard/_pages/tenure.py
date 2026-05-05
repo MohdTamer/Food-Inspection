@@ -1,10 +1,16 @@
-import streamlit  as st
-import plotly.express as px
-import pandas as pd
 from typing import Optional
 
-from science_the_data.dashboard.drawer import (subtitle, section, chart_layout, insight)
-from science_the_data.dashboard.inject_css import (PASS_COLOR, FAIL_COLOR, TEXT, CHART_FONT, ACCENT, SUBTEXT)
+import pandas as pd
+import plotly.express as px
+import streamlit as st
+
+from science_the_data.dashboard.drawer import chart_layout, insight, subtitle
+from science_the_data.dashboard.inject_css import (
+    ACCENT,
+    FAIL_COLOR,
+    PASS_COLOR,
+    SUBTEXT,
+)
 
 
 def page_tenure(raw: Optional[dict]) -> None:
@@ -16,9 +22,7 @@ def page_tenure(raw: Optional[dict]) -> None:
     )
 
     if raw is None or "business_tenure" not in raw:
-        st.info(
-            "Business age data not yet available — run the full pipeline first (`make run`)."
-        )
+        st.info("Business age data not yet available — run the full pipeline first (`make run`).")
         return
 
     bt = raw["business_tenure"]
@@ -26,9 +30,9 @@ def page_tenure(raw: Optional[dict]) -> None:
 
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Average Business Age at Inspection", f"{desc.get('mean', 0):,.0f} days")
-    c2.metric("Median",                              f"{desc.get('50%', 0):,.0f} days")
-    c3.metric("Records Missing Dates",               f"{bt['missing']:,}")
-    c4.metric("Removed (invalid negative dates)",    f"{bt['negative_count']:,}")
+    c2.metric("Median", f"{desc.get('50%', 0):,.0f} days")
+    c3.metric("Records Missing Dates", f"{bt['missing']:,}")
+    c4.metric("Removed (invalid negative dates)", f"{bt['negative_count']:,}")
 
     st.divider()
 

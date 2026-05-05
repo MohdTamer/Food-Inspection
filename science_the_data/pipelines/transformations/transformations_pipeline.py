@@ -1,3 +1,5 @@
+from typing import Callable, Optional
+
 from pipelines.validations import validations_pipeline
 from science_the_data.helpers.types import DataSplits, PipelineStage
 from science_the_data.pipelines.transformations.binarize_targets import (
@@ -15,7 +17,11 @@ def run_validations_on_csvs(splits: DataSplits, stage: PipelineStage, eda=None) 
         validations_pipeline(csv_name, stage, eda)
 
 
-def transformations_pipeline(splits: DataSplits, eda=None) -> DataSplits:
+def transformations_pipeline(
+    splits: DataSplits,
+    eda=None,
+    pre_prune_eda_hook: Optional[Callable[[DataSplits], None]] = None,
+) -> DataSplits:
     stage = PipelineStage.PROCESSED
 
     run_validations_on_csvs(splits, stage, eda)
@@ -27,6 +33,9 @@ def transformations_pipeline(splits: DataSplits, eda=None) -> DataSplits:
     train, val, test = feature_engineering_pipeline(*splits.as_tuple(), stage)
     splits = DataSplits(train, val, test)
     run_validations_on_csvs(splits, stage)
+
+    if pre_prune_eda_hook is not None:
+        pre_prune_eda_hook(splits)
 
     train, val, test = pruning_pipeline(*splits.as_tuple(), stage)
     splits = DataSplits(train, val, test)

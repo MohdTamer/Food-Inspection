@@ -12,6 +12,8 @@ class PathResolver:
 
     DATA_DIR = Path("data")
     REPORT_DIR = Path("reports")
+    EDA_CACHE_DIR = Path("eda_cache")
+    LOGS_DIR = Path("logs")
 
     MD_DIR = REPORT_DIR / "markdown"
     FIGURES = REPORT_DIR / "figures"
@@ -64,6 +66,14 @@ class PathResolver:
         return PathResolver.PROCESSE_MD_REPORTS_DIR / filename
 
     @staticmethod
+    def get_eda_cache_dir(filename: str) -> Path:
+        return PathResolver.EDA_CACHE_DIR / filename
+
+    @staticmethod
+    def get_logs_path(filename: str) -> Path:
+        return PathResolver.LOGS_DIR / filename
+
+    @staticmethod
     def get_data_path_from_stage(filename: str, stage: PipelineStage) -> Path:
         if stage == PipelineStage.RAW:
             csv_path = PathResolver.get_raw_data_path(filename)
@@ -103,3 +113,26 @@ class PathResolver:
             raise ValueError(f"Unsupported stage: {stage}")
 
         return report_path
+
+    @staticmethod
+    def ensureDirs() -> None:
+        directories = [
+            PathResolver.DATA_DIR,
+            PathResolver.REPORT_DIR,
+            PathResolver.EDA_CACHE_DIR,
+            PathResolver.LOGS_DIR,
+            PathResolver.MD_DIR,
+            PathResolver.FIGURES,
+            PathResolver.RAW_DATA_DIR,
+            PathResolver.INTERIM_DATA_DIR,
+            PathResolver.CLEANED_DATA_DIR,
+            PathResolver.PROCESSED_DATA_DIR,
+            PathResolver.QUARANTINED_DATA_DIR,
+            PathResolver.RAW_MD_REPORTS_DIR,
+            PathResolver.INTERIM_MD_REPORTS_DIR,
+            PathResolver.CLEANED_MD_REPORTS_DIR,
+            PathResolver.PROCESSE_MD_REPORTS_DIR,
+        ]
+
+        for directory in directories:
+            directory.mkdir(parents=True, exist_ok=True)

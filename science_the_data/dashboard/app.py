@@ -1,174 +1,112 @@
 """
-Run with: make dashboard or streamlit run science_the_data/dashboard/app.py
+Chicago Food Inspection Dashboard
+Run with: make dashboard  OR  streamlit run science_the_data/dashboard/app.py
 """
 
 from __future__ import annotations
 
 from pathlib import Path
 import pickle
+from typing import Optional
 
-import pandas as pd
-import plotly.express as px
 import streamlit as st
 
-CACHE_PATH = Path("eda_cache/eda_payload.pkl")
+from science_the_data.dashboard._pages.drivers import page_drivers
+from science_the_data.dashboard._pages.facilities import page_facilities
+from science_the_data.dashboard._pages.hotspots import page_hotspots
+from science_the_data.dashboard._pages.overview import page_overview
+from science_the_data.dashboard._pages.tenure import page_tenure
+from science_the_data.dashboard._pages.violations import page_violations
+from science_the_data.dashboard.inject_css import inject_css
+from science_the_data.helpers.path_resolver import PathResolver
+
+CACHE_PATHS = {
+    "raw": PathResolver.get_eda_cache_dir("eda_raw_payload.pkl"),
+    "pre_prune": PathResolver.get_eda_cache_dir("eda_pre_prune_payload.pkl"),
+    "final": PathResolver.get_eda_cache_dir("eda_payload.pkl"),
+}
 
 st.set_page_config(
-    page_title="Chicago Inspection EDA",
+    page_title="Chicago Food Inspections",
     page_icon="🍽️",
     layout="wide",
+    initial_sidebar_state="expanded",
 )
 
 
 @st.cache_data
-def load_payload() -> dict:
-    if not CACHE_PATH.exists():
-        st.error(
-            f"EDA cache not found at `{CACHE_PATH}`. Run the EDA pipeline first (`make run`)."
-        )
-        st.stop()
-    with open(CACHE_PATH, "rb") as f:
+def load_payload(path: Path) -> Optional[dict]:
+    if not path.exists():
+        return None
+    with open(path, "rb") as f:
         return pickle.load(f)
 
 
-payload = load_payload()
-
-
-def show_overview():
-    st.title("📊 Dataset Overview")
-
-    balance = payload["class_balance"]
-    num_df = payload["numeric_summary"]
-
-    total = sum(balance["counts"].values())
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Total Inspections", f"{total:,}")
-    c2.metric("Pass Rate", f"{balance['pct'].get(0, 0):.1f}%")
-    c3.metric("Fail Rate", f"{balance['pct'].get(1, 0):.1f}%", delta_color="inverse")
-
-    st.divider()
-
-    col_left, col_right = st.columns([1, 2])
-
-    with col_left:
-        st.subheader("Class Balance")
-        fig = px.pie(
-            values=list(balance["counts"].values()),
-            names=["Pass", "Fail"],
-            hole=0.5,
-            color=["Pass", "Fail"],
-            color_discrete_map={"Pass": "#2ecc71", "Fail": "#e74c3c"},
-        )
-        st.plotly_chart(fig, use_container_width=True)
-
-    with col_right:
-        st.subheader("Feature Statistics")
-        st.dataframe(num_df.style.background_gradient(cmap="YlGnBu"), use_container_width=True)
-
-
-def show_distributions():
-    st.title("Feature Distributions")
-
-    tab1, tab2, tab3 = st.tabs(["Facility Types", "Risk Levels", "Inspection Types"])
-
-    with tab1:
-        ft = payload["top_facility_types"]
-        fig = px.bar(ft, orientation="h", labels={"value": "Count", "index": "Facility"})
-        st.plotly_chart(fig, use_container_width=True)
-
-    with tab2:
-        risk = payload["risk_distribution"]
-        fig = px.bar(
-            x=risk.index.astype(str), y=risk.values, color=risk.values, title="Count by Risk Level"
-        )
-        st.plotly_chart(fig, use_container_width=True)
-
-    with tab3:
-        it = payload["inspection_type_distribution"]
-        st.plotly_chart(
-            px.treemap(names=it.index, parents=["All"] * len(it), values=it.values),
-            use_container_width=True,
-        )
-
-
-def show_correlations():
-    st.title("Correlation Analysis")
-
-    st.subheader("Target Correlation (Results)")
-    tc = payload["target_correlation"]
-    if not tc.empty:
-        fig = px.bar(tc, color=tc.values, color_continuous_scale="RdBu_r", range_color=[-1, 1])
-        st.plotly_chart(fig, use_container_width=True)
-
-    st.subheader("Feature Heatmap")
-    corr = payload["numeric_correlation"]
-    fig = px.imshow(corr, text_auto=".2f", color_continuous_scale="RdBu_r", aspect="auto")  # type: ignore
-    st.plotly_chart(fig, use_container_width=True)
-
-
-def show_missingness():
-    st.title("Missing Data Summary")
-    miss = payload["missing_summary"]
-    if miss.empty:
-        st.success("Data is clean! No missing values found.")
-    else:
-        st.warning(f"Found {len(miss)} columns with missing values.")
-        st.table(miss)
-
-
-def show_violations():
-    st.title("Violation Analysis")
-
-    violation_data = payload.get("violations")
-    if not violation_data:
-        st.warning("No violation data found in cache.")
-        return
-
-    # Top level metrics
-    c1, c2 = st.columns(2)
-    c1.metric("Avg Violations / Inspection", f"{violation_data['mean_violations']:.2f}")
-    c2.metric("Max Violations Found", int(violation_data["max_violations"]))
-
-    st.divider()
-
-    # Violation Distribution Plot
-    st.subheader("Distribution of Violation Counts")
-    dist_df = pd.DataFrame(
-        list(violation_data["distribution"].items()),
-        columns=["Num Violations", "Inspection Count"],
-    )
-
-    fig = px.bar(
-        dist_df,
-        x="Num Violations",
-        y="Inspection Count",
-        color="Inspection Count",
-        color_continuous_scale="Viridis",
-        labels={"Num Violations": "Number of Violations", "Inspection Count": "Frequency"},
-    )
-    st.plotly_chart(fig, use_container_width=True)
-
-    st.info(
-        f"**Correlation with Failure:** The correlation between violation count and a 'Fail' result is **{violation_data['correlation_with_result']:.3f}**."
-    )
-
-
 PAGES = {
-    "Dashboard Overview": show_overview,
-    "Distributions": show_distributions,
-    "Correlations": show_correlations,
-    "Missing Values": show_missingness,
-    "Violations": show_violations,
+    "🏙️  City Overview": "overview",
+    "📍  Failure Hotspots": "hotspots",
+    "🏢  Facility Insights": "facilities",
+    "⚠️  Violation Patterns": "violations",
+    "📅  Business Age & Risk": "tenure",
+    "🔑  Key Risk Drivers": "drivers",
+}
+
+REQUIRES = {
+    "overview": ["final"],
+    "hotspots": ["pre_prune"],
+    "facilities": ["final"],
+    "violations": ["final"],  # raw is optional / shown in tab
+    "tenure": ["raw"],
+    "drivers": ["final"],
+    "quality": ["final"],
 }
 
 
-def main():
-    st.sidebar.title("🍽️ Inspection EDA")
-    st.sidebar.markdown("---")
-    selection = st.sidebar.radio("Navigate to:", list(PAGES.keys()))
+def main() -> None:
+    inject_css()
 
-    # Execute the selected function
-    PAGES[selection]()
+    raw = load_payload(CACHE_PATHS["raw"])
+    pre_prune = load_payload(CACHE_PATHS["pre_prune"])
+    final = load_payload(CACHE_PATHS["final"])
+
+    st.sidebar.title("Chicago Food\nInspections")
+    st.sidebar.markdown("---")
+
+    selection = st.sidebar.radio("", list(PAGES.keys()), label_visibility="collapsed")
+    page_key = PAGES[selection]
+
+    # Guard: check required caches
+    required = REQUIRES[page_key]
+    caches = {"raw": raw, "pre_prune": pre_prune, "final": final}
+    missing_caches = [k for k in required if caches[k] is None]
+
+    if missing_caches and page_key not in ("violations", "tenure"):
+        cache_names = {"raw": "raw EDA", "pre_prune": "pre-prune EDA", "final": "final EDA"}
+        names = ", ".join(cache_names[k] for k in missing_caches)
+        st.warning(f"This page requires the **{names}** cache. Run `make run` to generate it.")
+        return
+
+    if page_key == "overview":
+        page_overview(final)  # type: ignore
+    elif page_key == "hotspots":
+        page_hotspots(pre_prune)
+    elif page_key == "facilities":
+        page_facilities(pre_prune)
+    elif page_key == "violations":
+        page_violations(final, raw)  # type: ignore
+    elif page_key == "tenure":
+        page_tenure(raw)
+    elif page_key == "drivers":
+        page_drivers(final)  # type: ignore
+
+    st.sidebar.markdown("---")
+    st.sidebar.markdown(
+        '<p style="font-size:0.7rem; color:#555; line-height:1.6">'
+        "Data: City of Chicago Data Portal<br>"
+        "Model performance metrics are in the separate model dashboard."
+        "</p>",
+        unsafe_allow_html=True,
+    )
 
 
 if __name__ == "__main__":

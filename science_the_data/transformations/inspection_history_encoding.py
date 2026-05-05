@@ -13,34 +13,6 @@ def add_inspection_history_features(
     val: pd.DataFrame,
     test: pd.DataFrame,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    """Compute lag / rolling features that require cross-split temporal ordering.
-
-    All three splits are combined before computing features so that a business
-    that straddles the train/val boundary gets correct lag values in val.
-    Null-fill statistics are derived from train only to prevent leakage.
-
-    New columns added
-    -----------------
-    days_since_last_inspection : float
-        Calendar days between the current and previous inspection for the same
-        licence.  First inspection per licence is filled with the train median.
-    prev_inspection_result : float
-        Binary result (0/1) of the immediately preceding inspection.
-        First inspection per licence is filled with the train mean.
-    fail_rate_last_3 : float
-        Rolling mean of the previous 3 inspection results (shift(1) ensures the
-        current row is excluded).  Filled with the train mean for cold-start rows.
-
-    Parameters
-    ----------
-    train, val, test:
-        DataFrames that must contain ``License #``, ``Inspection Date``
-        (datetime-like), and ``Results`` (binary int) columns.
-
-    Returns
-    -------
-    train, val, test with the three new feature columns appended.
-    """
     train = train.copy()
     val = val.copy()
     test = test.copy()

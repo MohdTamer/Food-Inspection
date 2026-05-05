@@ -3,7 +3,7 @@ from __future__ import annotations
 from loguru import logger
 import pandas as pd
 
-from helpers.path_resolver import PathResolver
+from science_the_data.helpers.path_resolver import PathResolver
 from science_the_data.helpers.types import PipelineStage, SplitData
 
 

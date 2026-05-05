@@ -13,7 +13,7 @@ EDA_CACHE_DIR = Path("eda_cache")
 TARGET = "Results"
 
 
-def eda_pipeline(splits: DataSplits) -> None:
+def eda_final_pipeline(splits: DataSplits) -> None:
     stage = PipelineStage.PROCESSED
 
     logger.info("=== EDA Pipeline ===")

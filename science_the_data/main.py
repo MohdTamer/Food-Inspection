@@ -1,19 +1,18 @@
 import typer
 
 from pipelines.split_data import splitting_pipeline
+from science_the_data.helpers.path_resolver import PathResolver
 from science_the_data.helpers.types import DataSplits, PipelineStage
+from science_the_data.pipelines.eda import eda_final_pipeline, eda_pre_prune_pipeline, eda_raw_pipeline
 from science_the_data.pipelines.cleaning.cleaning_pipeline import cleaning_pipeline
-from science_the_data.pipelines.eda.eda_pipeline import eda_pipeline
+# from science_the_data.pipelines.eda.eda_final_pipeline import eda_final_pipeline
+# from science_the_data.pipelines.eda.eda_pre_prune_pipeline import eda_pre_prune_pipeline
 from science_the_data.pipelines.modeling.modelling_pipeline import modelling_pipeline
 from science_the_data.pipelines.transformations.transformations_pipeline import (
     transformations_pipeline,
 )
 
 app = typer.Typer()
-
-
-def run_cleaning(raw_csv_name: str) -> str:
-    return cleaning_pipeline(raw_csv_name)
 
 
 def run_splitting(clean_csv_name: str) -> tuple[DataSplits, object]:
@@ -25,19 +24,13 @@ def run_splitting(clean_csv_name: str) -> tuple[DataSplits, object]:
     return DataSplits(train_csv, val_csv, test_csv), eda
 
 
-def run_transformations(splits: DataSplits, eda=None) -> DataSplits:
-    return transformations_pipeline(splits, eda)
-
-
-def run_modelling(splits: DataSplits) -> None:
-    modelling_pipeline(splits)
-
-
 @app.command()
 def main() -> None:
-    # raw_csv_name = "merged_inspections_licenses_inner.csv"
+    # PathResolver.ensureDirs()
+    raw_csv_name = "merged_inspections_licenses_inner.csv"
+    eda_raw_pipeline.eda_raw_pipeline(raw_csv_name)
 
-    # clean_csv = run_cleaning(raw_csv_name)
+    # clean_csv = cleaning_pipeline(raw_csv_name)
     # clean_csv = "clean_final.csv"
 
     # splits, eda = run_splitting(clean_csv)
@@ -50,12 +43,13 @@ def main() -> None:
         None,
     )
 
-    splits = run_transformations(splits, eda)
+    splits = transformations_pipeline(splits, eda, eda_pre_prune_pipeline.eda_pre_prune_pipeline)
     splits = DataSplits(
         "encoded_features_train.csv", "encoded_features_val.csv", "encoded_features_test.csv"
     )
-    eda_pipeline(splits)
-    run_modelling(splits)
+
+    eda_final_pipeline.eda_final_pipeline(splits)
+    # modelling_pipeline(splits)
 
 
 if __name__ == "__main__":

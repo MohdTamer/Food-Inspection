@@ -1,15 +1,17 @@
 import typer
 
 from pipelines.split_data import splitting_pipeline
+from science_the_data.helpers.path_resolver import PathResolver
 from science_the_data.helpers.types import DataSplits, PipelineStage
+from science_the_data.pipelines.cleaning.cleaning_pipeline import (
+    cleaning_pipeline,
+)
 from science_the_data.pipelines.eda import (
     eda_final_pipeline,
     eda_pre_prune_pipeline,
     eda_raw_pipeline,
 )
-
-# from science_the_data.pipelines.eda.eda_final_pipeline import eda_final_pipeline
-# from science_the_data.pipelines.eda.eda_pre_prune_pipeline import eda_pre_prune_pipeline
+from science_the_data.pipelines.modeling import modelling_pipeline
 from science_the_data.pipelines.transformations.transformations_pipeline import (
     transformations_pipeline,
 )
@@ -28,22 +30,22 @@ def run_splitting(clean_csv_name: str) -> tuple[DataSplits, object]:
 
 @app.command()
 def main() -> None:
-    # PathResolver.ensureDirs()
+    PathResolver.ensureDirs()
     raw_csv_name = "merged_inspections_licenses_inner.csv"
     eda_raw_pipeline.eda_raw_pipeline(raw_csv_name)
 
-    # clean_csv = cleaning_pipeline(raw_csv_name)
-    # clean_csv = "clean_final.csv"
+    clean_csv = cleaning_pipeline(raw_csv_name)
+    clean_csv = "clean_final.csv"
 
-    # splits, eda = run_splitting(clean_csv)
-    splits, eda = (
-        DataSplits(
-            "split_train.csv",
-            "split_validation.csv",
-            "split_test.csv",
-        ),
-        None,
-    )
+    splits, eda = run_splitting(clean_csv)
+    # splits, eda = (
+    #     DataSplits(
+    #         "split_train.csv",
+    #         "split_validation.csv",
+    #         "split_test.csv",
+    #     ),
+    #     None,
+    # )
 
     splits = transformations_pipeline(splits, eda, eda_pre_prune_pipeline.eda_pre_prune_pipeline)
     splits = DataSplits(
@@ -51,7 +53,7 @@ def main() -> None:
     )
 
     eda_final_pipeline.eda_final_pipeline(splits)
-    # modelling_pipeline(splits)
+    modelling_pipeline.modelling_pipeline(splits)
 
 
 if __name__ == "__main__":

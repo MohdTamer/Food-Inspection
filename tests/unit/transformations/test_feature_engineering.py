@@ -9,6 +9,7 @@ from science_the_data.transformations.feature_engineering import (
     encode_risk,
     engineer_license_expiry,
     parse_dates,
+    segment_inspection_date,
 )
 
 
@@ -166,6 +167,52 @@ class TestEngineerLicenseExpiry:
         assert list(df.columns) == original_cols
 
 
+class TestSegmentInspectionDate:
+
+    def _date_df(self, date_str: str = "2020-03-15") -> pd.DataFrame:
+        return pd.DataFrame({"Inspection Date": pd.to_datetime([date_str])})
+
+    def test_all_four_columns_added(self):
+        df = self._date_df()
+        t, _, _ = segment_inspection_date(df.copy(), df.copy(), df.copy())
+        for col in ["inspection_year", "inspection_month", "inspection_dayofweek", "inspection_quarter"]:
+            assert col in t.columns
+
+    def test_year_extracted_correctly(self):
+        df = self._date_df("2021-06-10")
+        t, _, _ = segment_inspection_date(df.copy(), df.copy(), df.copy())
+        assert t["inspection_year"].iloc[0] == 2021
+
+    def test_month_extracted_correctly(self):
+        df = self._date_df("2021-06-10")
+        t, _, _ = segment_inspection_date(df.copy(), df.copy(), df.copy())
+        assert t["inspection_month"].iloc[0] == 6
+
+    def test_dayofweek_extracted_correctly(self):
+        # 2020-01-01 is a Wednesday → 2 (Monday=0)
+        df = self._date_df("2020-01-01")
+        t, _, _ = segment_inspection_date(df.copy(), df.copy(), df.copy())
+        assert t["inspection_dayofweek"].iloc[0] == 2
+
+    def test_quarter_extracted_correctly(self):
+        df = self._date_df("2021-04-01")
+        t, _, _ = segment_inspection_date(df.copy(), df.copy(), df.copy())
+        assert t["inspection_quarter"].iloc[0] == 2
+
+    def test_all_splits_receive_columns(self):
+        df = self._date_df("2020-06-15")
+        t, v, e = segment_inspection_date(df.copy(), df.copy(), df.copy())
+        for split in [t, v, e]:
+            assert "inspection_year" in split.columns
+            assert "inspection_month" in split.columns
+
+    def test_does_not_mutate_original(self):
+        df = self._date_df()
+        original_cols = list(df.columns)
+        segment_inspection_date(df.copy(), df.copy(), df.copy())
+        assert list(df.columns) == original_cols
+
+
 class TestApplyFeatureEngineering:
 
     def test_returns_three_dataframes(self):
@@ -191,3 +238,5 @@ class TestApplyFeatureEngineering:
         assert "days_to_license_expiry" in t.columns
         assert "license_expiry_missing" in t.columns
         assert pd.api.types.is_datetime64_any_dtype(t["Inspection Date"])
+        for col in ["inspection_year", "inspection_month", "inspection_dayofweek", "inspection_quarter"]:
+            assert col in t.columns

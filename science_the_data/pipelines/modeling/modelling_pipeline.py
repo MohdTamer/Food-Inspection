@@ -6,10 +6,10 @@ from science_the_data.helpers.types import DataSplits, PipelineStage
 from science_the_data.pipelines.modeling.train_models import train_models_pipeline
 
 
-def _report_filename(split: str) -> str:
-    """'XGBoost — Val' -> 'model_report_xgboost.md'"""
-    name = split.replace("—", "").replace("Val", "").strip().lower().replace(" ", "_")
-    return f"model_report_{name}.md"
+def _report_filename(model_name: str) -> str:
+    """'XGBoost' -> 'model_report_xgboost.md'"""
+    slug = model_name.strip().lower().replace(" ", "_")
+    return f"model_report_{slug}.md"
 
 
 def modelling_pipeline(splits: DataSplits) -> None:
@@ -18,7 +18,7 @@ def modelling_pipeline(splits: DataSplits) -> None:
     report_dir = PathResolver.get_report_path_from_stage(splits.train, PipelineStage.PROCESSED)
 
     for result in results:
-        filename = _report_filename(result["split"])
+        filename = _report_filename(result["model"])
         logger.info("Writing {} ...", filename)
         report_path = write_model_report(
             results=[result],

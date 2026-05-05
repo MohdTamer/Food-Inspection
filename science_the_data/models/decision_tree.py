@@ -10,7 +10,7 @@ from scipy.stats import randint
 from sklearn.model_selection import PredefinedSplit, RandomizedSearchCV
 from sklearn.tree import DecisionTreeClassifier
 
-from models.evaluation import evaluate
+from science_the_data.models.evaluation import evaluate
 
 
 def train(
@@ -21,13 +21,12 @@ def train(
     models_dir: Path,
 ) -> tuple[DecisionTreeClassifier, dict, dict]:
 
-    # Combine train+val for PredefinedSplit — val rows get index 0, train rows get -1
     X_search = pd.concat([X_train, X_val], ignore_index=True)
     y_search = pd.concat([y_train, y_val], ignore_index=True)
     split_index = np.concatenate(
         [
-            np.full(len(X_train), -1),  # train fold: used for fitting
-            np.full(len(X_val), 0),  # val fold: used for scoring
+            np.full(len(X_train), -1),
+            np.full(len(X_val), 0),
         ]
     )
     ps = PredefinedSplit(split_index)
@@ -37,6 +36,7 @@ def train(
         "min_samples_split": randint(2, 50),
         "min_samples_leaf": randint(1, 30),
         "criterion": ["gini", "entropy"],
+        "max_features": [None, "sqrt", "log2"],
         "class_weight": ["balanced", None],
     }
 
@@ -55,14 +55,13 @@ def train(
     best_params = search.best_params_
     logger.info("Best params: {}", best_params)
 
-    # Refit on train only with best params
     model = DecisionTreeClassifier(**best_params, random_state=42)
     model.fit(X_train, y_train)
 
     logger.info("Tree depth: {}  Leaf nodes: {}", model.get_depth(), model.get_n_leaves())
 
-    train_metrics = evaluate(model, X_train, y_train, "Decision Tree — Train")
-    val_metrics = evaluate(model, X_val, y_val, "Decision Tree — Val")
+    _, _, train_metrics = evaluate(model, X_train, y_train, "Decision Tree — Train")
+    _, _, val_metrics = evaluate(model, X_val, y_val, "Decision Tree — Val")
 
     importance_df = pd.DataFrame(
         {

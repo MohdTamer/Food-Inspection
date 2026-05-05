@@ -3,11 +3,14 @@ from __future__ import annotations
 from pathlib import Path
 
 from loguru import logger
+import mlflow
 import pandas as pd
 
 from helpers.splits_io import load_splits
 from helpers.types import PipelineStage
+from science_the_data.config.config import PROJ_ROOT
 from science_the_data.helpers.feature_importance import get_feature_importance
+from science_the_data.helpers.mlflow_helpers import log_metrics_to_mlflow
 from science_the_data.models import (
     decision_tree,
     knn,
@@ -85,48 +88,57 @@ def train_models_pipeline(
 
     results: list[dict] = []
 
+    mlflow.set_tracking_uri(str(PROJ_ROOT.parent / "mlruns"))
+    mlflow.set_experiment("food-inspection-classification")
+
     for name, module in _STEPS:
         logger.info("Training {}...", name)
-        model, train_m, val_m = module.train(X_train, y_train, X_val, y_val, MODELS_DIR)
-        _, _, test_m = evaluate(model, X_test, y_test, f"{name} — Test")
+        with mlflow.start_run(run_name=name):
+            model, train_m, val_m = module.train(X_train, y_train, X_val, y_val, MODELS_DIR)
+            _, _, test_m = evaluate(model, X_test, y_test, f"{name} — Test")
 
-        results.append(
-            {
-                "model": name,
-                # flat val metrics at top level (keeps render_models / reporting working)
-                **val_m,
-                # train metrics for overfitting check
-                "train_roc_auc": train_m["roc_auc"],
-                "train_fnr": train_m["false_negative_rate"],
-                "train_fpr": train_m["false_positive_rate"],
-                "train_f1_fail": train_m["f1_fail"],
-                "train_balanced_accuracy": train_m["balanced_accuracy"],
-                # test metrics (honest final evaluation)
-                "test_roc_auc": test_m["roc_auc"],
-                "test_f1_fail": test_m["f1_fail"],
-                "test_fnr": test_m["false_negative_rate"],
-                "test_fpr": test_m["false_positive_rate"],
-                "test_balanced_accuracy": test_m["balanced_accuracy"],
-                "test_pr_auc": test_m["pr_auc"],
-                "test_mcc": test_m["mcc"],
-                "test_precision_fail": test_m["precision_fail"],
-                "test_recall_fail": test_m["recall_fail"],
-            }
-        )
+            log_metrics_to_mlflow(train_m, "train")
+            log_metrics_to_mlflow(val_m, "val")
+            log_metrics_to_mlflow(test_m, "test")
 
-        imp_df = get_feature_importance(model, feature_names)
-        if imp_df is not None:
-            imp_df.insert(0, "model", name)
-            slug = name.lower().replace(" ", "_")
-            imp_path = logs_dir / f"feature_importance_{slug}.csv"
-            imp_df.to_csv(imp_path, index=False)
-            logger.info(
-                "{} — top features:\n{}",
-                name,
-                imp_df.head(5).to_string(index=False),
+            results.append(
+                {
+                    "model": name,
+                    # flat val metrics at top level (keeps render_models / reporting working)
+                    **val_m,
+                    # train metrics for overfitting check
+                    "train_roc_auc": train_m["roc_auc"],
+                    "train_fnr": train_m["false_negative_rate"],
+                    "train_fpr": train_m["false_positive_rate"],
+                    "train_f1_fail": train_m["f1_fail"],
+                    "train_balanced_accuracy": train_m["balanced_accuracy"],
+                    # test metrics (honest final evaluation)
+                    "test_roc_auc": test_m["roc_auc"],
+                    "test_f1_fail": test_m["f1_fail"],
+                    "test_fnr": test_m["false_negative_rate"],
+                    "test_fpr": test_m["false_positive_rate"],
+                    "test_balanced_accuracy": test_m["balanced_accuracy"],
+                    "test_pr_auc": test_m["pr_auc"],
+                    "test_mcc": test_m["mcc"],
+                    "test_precision_fail": test_m["precision_fail"],
+                    "test_recall_fail": test_m["recall_fail"],
+                }
             )
-        else:
-            logger.info("{} — no feature importances available", name)
+
+            imp_df = get_feature_importance(model, feature_names)
+            if imp_df is not None:
+                imp_df.insert(0, "model", name)
+                slug = name.lower().replace(" ", "_")
+                imp_path = logs_dir / f"feature_importance_{slug}.csv"
+                imp_df.to_csv(imp_path, index=False)
+                mlflow.log_artifact(str(imp_path), artifact_path="feature_importance")
+                logger.info(
+                    "{} — top features:\n{}",
+                    name,
+                    imp_df.head(5).to_string(index=False),
+                )
+            else:
+                logger.info("{} — no feature importances available", name)
 
     summary = pd.DataFrame(results).sort_values("test_roc_auc", ascending=False)
     logger.info("\n{}", _format_comparison_table(summary))

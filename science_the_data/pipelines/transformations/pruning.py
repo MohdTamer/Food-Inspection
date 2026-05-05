@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 from loguru import logger
 
 from helpers.pipeline_logger import PipelineLogger
 from helpers.splits_io import load_splits, save_splits
+from science_the_data.helpers.path_resolver import PathResolver
 from science_the_data.helpers.types import PipelineStage, SplitData
 from science_the_data.transformations.pruning import prune_columns
 
@@ -58,7 +57,7 @@ def pruning_pipeline(
         stage=output_stage,
     )
 
-    log_path = Path("logs/pruning.csv")
+    log_path = PathResolver.get_logs_path("pruning.csv")
     log_path.parent.mkdir(parents=True, exist_ok=True)
     pipeline_logger.save(log_path)
     logger.info("Saved pipeline log → {}", log_path)

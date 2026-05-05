@@ -31,11 +31,12 @@ def run_splitting(clean_csv_name: str) -> tuple[DataSplits, object]:
 @app.command()
 def main() -> None:
     PathResolver.ensureDirs()
+    
     raw_csv_name = "merged_inspections_licenses_inner.csv"
     eda_raw_pipeline.eda_raw_pipeline(raw_csv_name)
 
     clean_csv = cleaning_pipeline(raw_csv_name)
-    clean_csv = "clean_final.csv"
+    # clean_csv = "clean_final.csv"
 
     splits, eda = run_splitting(clean_csv)
     # splits, eda = (

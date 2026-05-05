@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from loguru import logger
 import pandas as pd
 
@@ -38,7 +36,7 @@ def quarantine_pipeline(input_csv_name: str, output_stage: PipelineStage) -> str
         f"{len(df_clean):,} rows retained"
     )
 
-    log_path = Path("logs/quarantine_log.csv")
+    log_path = PathResolver.get_logs_path("quarantine_log.csv")
     log_path.parent.mkdir(parents=True, exist_ok=True)
     pipeline_logger.save(log_path)
     logger.info("Saved pipeline log to: {}", log_path)

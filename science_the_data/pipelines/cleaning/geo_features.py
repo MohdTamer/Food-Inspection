@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from loguru import logger
 import pandas as pd
 
@@ -66,7 +64,7 @@ def geo_blocking_pipeline(input_csv_name: str, output_stage: PipelineStage) -> s
         f"Cast types, standardised Risk, nulled {nulled_leakage:,} leakage rows, built flags"
     )
 
-    log_path = Path("logs/geo_blocking_log.csv")
+    log_path = PathResolver.get_logs_path("geo_blocking_log.csv")
     log_path.parent.mkdir(parents=True, exist_ok=True)
     pipeline_logger.save(log_path)
     logger.info("Saved pipeline log to: {}", log_path)

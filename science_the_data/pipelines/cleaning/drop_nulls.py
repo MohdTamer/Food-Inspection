@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from loguru import logger
 import pandas as pd
 
@@ -68,7 +66,7 @@ def remove_nulls_dups_pipeline(input_csv_name: str, output_stage: PipelineStage)
         f"Rows after dedup: {actual_rows_after_dedup:,} (expected ~{expected_rows_after_dedup:,} +/- {tolerance:,})"
     )
 
-    path = Path("logs/drop_nulls.csv")
+    path = PathResolver.get_logs_path("drop_nulls.csv")
     pipeline_logger.save(path)
     logger.info("Saved logs to CSV file in: {}", path)
 

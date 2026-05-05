@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 from loguru import logger
 
 from helpers.pipeline_logger import PipelineLogger
 from helpers.splits_io import load_splits, save_splits
+from science_the_data.helpers.path_resolver import PathResolver
 from science_the_data.helpers.types import PipelineStage, SplitData
-from transformations.feature_engineering import apply_feature_engineering
+from science_the_data.transformations.feature_engineering import apply_feature_engineering
 
 
 def feature_engineering_pipeline(
@@ -51,7 +50,7 @@ def feature_engineering_pipeline(
         stage=stage,
     )
 
-    log_path = Path("logs/feature_engineering.csv")
+    log_path = PathResolver.get_logs_path("feature_engineering.csv")
     log_path.parent.mkdir(parents=True, exist_ok=True)
     pipeline_logger.save(log_path)
     logger.info("Saved pipeline log → {}", log_path)

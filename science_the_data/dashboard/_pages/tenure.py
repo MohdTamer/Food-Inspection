@@ -97,6 +97,6 @@ def page_tenure(raw: Optional[dict]) -> None:
             "for <strong>prioritising newly-licensed establishments</strong> in inspection "
             "scheduling — catching problems before they become entrenched."
         )
-        
+
     else:
         st.info("Per-class tenure breakdown not available in this cache.")
